@@ -42,8 +42,8 @@ namespace TRIdle.Game
 
     public void RB_ExploreCompleted() {
       // add reward + restart explore
-      Storage.R.Explore.Proficiency += 1;
-      T_ExploreProficiency.text = $"Prof: {Storage.R.Explore.Proficiency}";
+      Storage.R.Professions.CommodityManagement.AddProficiency(1);
+      T_ExploreProficiency.text = $"Prof: {Storage.R.Professions.CommodityManagement.Proficiency}";
       m_exploreProgress = 0;
     }
   }
