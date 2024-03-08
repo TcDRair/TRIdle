@@ -13,22 +13,23 @@ namespace TRIdle.Game
 
   public abstract class Profession
   {
-    /// <summary>ÀÌ Àü¹®±â¼úÀÇ ÀÌ¸§À» ³ªÅ¸³À´Ï´Ù.</summary>
+    /// <summary>ì´ ì „ë¬¸ê¸°ìˆ ì˜ ì´ë¦„ì„ ë‚˜íƒ€ëƒ…ë‹ˆë‹¤.</summary>
     public abstract string Name { get; }
-    /// <summary>ÀÌ Àü¹®±â¼úÀÇ ÁÖ¿ä ¼³¸íÀÔ´Ï´Ù.</summary>
+    /// <summary>ì´ ì „ë¬¸ê¸°ìˆ ì˜ ì£¼ìš” ì„¤ëª…ì…ë‹ˆë‹¤.</summary>
     public abstract string Description { get; }
-    /// <summary>ÀÌ Àü¹®±â¼úÀÇ ÃÖ´ë µî±ŞÀ» ³ªÅ¸³À´Ï´Ù.</summary>
+    public abstract MainProfession MainProfession { get; }
+    /// <summary>ì´ ì „ë¬¸ê¸°ìˆ ì˜ ìµœëŒ€ ë“±ê¸‰ì„ ë‚˜íƒ€ëƒ…ë‹ˆë‹¤.</summary>
     public abstract int MaxGrade { get; }
-    /// <summary>ÀÌ Àü¹®±â¼úÀÇ µî±Şº° ÃÖ´ë ·¹º§À» ³ªÅ¸³À´Ï´Ù.</summary>
+    /// <summary>ì´ ì „ë¬¸ê¸°ìˆ ì˜ ë“±ê¸‰ë³„ ìµœëŒ€ ë ˆë²¨ì„ ë‚˜íƒ€ëƒ…ë‹ˆë‹¤.</summary>
     public abstract int[] MaxLevel { get; }
-    /// <summary>ÀÌ Àü¹®±â¼úÀÇ ÁÖ µî±ŞÀ» ³ªÅ¸³À´Ï´Ù.</summary>
+    /// <summary>ì´ ì „ë¬¸ê¸°ìˆ ì˜ ì£¼ ë“±ê¸‰ì„ ë‚˜íƒ€ëƒ…ë‹ˆë‹¤.</summary>
     public int Grade { get; protected set; } = 1;
-    /// <summary>ÀÌ Àü¹®±â¼úÀÇ ÇöÀç µî±Ş ³» ·¹º§À» ³ªÅ¸³À´Ï´Ù.</summary>
+    /// <summary>ì´ ì „ë¬¸ê¸°ìˆ ì˜ í˜„ì¬ ë“±ê¸‰ ë‚´ ë ˆë²¨ì„ ë‚˜íƒ€ëƒ…ë‹ˆë‹¤.</summary>
     public int Level { get; protected set; } = 0;
-    /// <summary>ÀÌ Àü¹®±â¼úÀÇ µî±Ş ³» ¼÷·Ãµµ¸¦ ³ªÅ¸³À´Ï´Ù.</summary>
+    /// <summary>ì´ ì „ë¬¸ê¸°ìˆ ì˜ ë“±ê¸‰ ë‚´ ìˆ™ë ¨ë„ë¥¼ ë‚˜íƒ€ëƒ…ë‹ˆë‹¤.</summary>
     public long Proficiency { get; protected set; } = 0;
 
-    /// <summary>ÀÌ Àü¹®±â¼úÀÇ ¼÷·Ãµµ¸¦ »ó½Â½ÃÅµ´Ï´Ù. °á°ú¿¡ µû¶ó ·¹º§ÀÌ³ª µî±ŞÀÌ »ó½ÂÇÒ ¼ö ÀÖ½À´Ï´Ù.</summary>
+    /// <summary>ì´ ì „ë¬¸ê¸°ìˆ ì˜ ìˆ™ë ¨ë„ë¥¼ ìƒìŠ¹ì‹œí‚µë‹ˆë‹¤. ê²°ê³¼ì— ë”°ë¼ ë ˆë²¨ì´ë‚˜ ë“±ê¸‰ì´ ìƒìŠ¹í•  ìˆ˜ ìˆìŠµë‹ˆë‹¤.</summary>
     public virtual void AddProficiency(long amount) {
       // Check if the proficiency is enough to level up
       if ((Proficiency += amount) < RequiredProficiency(Grade, Level)) return;
@@ -36,10 +37,10 @@ namespace TRIdle.Game
       if (Level++ <= MaxLevel[Grade]) return;
       if (Grade < MaxGrade) { Grade++; Level = 0; }
     }
-    /// <summary>´ÙÀ½ ·¹º§±îÁö ÇÊ¿äÇÑ ¼÷·Ãµµ ¼öÄ¡¸¦ ³ªÅ¸³À´Ï´Ù.</summary>
+    /// <summary>ë‹¤ìŒ ë ˆë²¨ê¹Œì§€ í•„ìš”í•œ ìˆ™ë ¨ë„ ìˆ˜ì¹˜ë¥¼ ë‚˜íƒ€ëƒ…ë‹ˆë‹¤.</summary>
     public abstract long RequiredProficiency(int grade, int level);
 
-    /// <summary>ÀÌ Àü¹®±â¼úÀÇ µî±Ş, ·¹º§, ¼÷·Ãµµ¸¦ °ËÁõÇÕ´Ï´Ù.</summary>
+    /// <summary>ì´ ì „ë¬¸ê¸°ìˆ ì˜ ë“±ê¸‰, ë ˆë²¨, ìˆ™ë ¨ë„ë¥¼ ê²€ì¦í•©ë‹ˆë‹¤.</summary>
     /// <exception cref="InvalidOperationException"></exception>
     /// <exception cref="ArgumentException"></exception>
     /// <exception cref="ArgumentOutOfRangeException"></exception>
@@ -53,50 +54,54 @@ namespace TRIdle.Game
       if (grade < 0 || grade > MaxGrade)
         throw new ArgumentOutOfRangeException($"The grade({grade}) is out of range({MaxGrade}).");
     }
-    /// <summary>ÇöÀç µî±Ş ¹× ·¹º§¿¡ µû¸¥ Áö¼Ó È¿°ú¸¦ °è»êÇÕ´Ï´Ù. ÃÖÃÊ ÇÑ ¹ø¸¸ »ç¿ëµË´Ï´Ù.</summary>
+    /// <summary>í˜„ì¬ ë“±ê¸‰ ë° ë ˆë²¨ì— ë”°ë¥¸ ì§€ì† íš¨ê³¼ë¥¼ ê³„ì‚°í•©ë‹ˆë‹¤. ìµœì´ˆ í•œ ë²ˆë§Œ ì‚¬ìš©ë©ë‹ˆë‹¤.</summary>
     protected abstract void LoadPassives();
-    /// <summary>ÇØ´ç µî±Ş ´Ş¼º ½Ã ¹ß»ıÇÏ´Â Áö¼Ó È¿°ú¸¦ Àû¿ëÇÕ´Ï´Ù. µî±Ş »ó½Â ½Ã »ç¿ëµË´Ï´Ù.</summary>
+    /// <summary>í•´ë‹¹ ë“±ê¸‰ ë‹¬ì„± ì‹œ ë°œìƒí•˜ëŠ” ì§€ì† íš¨ê³¼ë¥¼ ì ìš©í•©ë‹ˆë‹¤. ë“±ê¸‰ ìƒìŠ¹ ì‹œ ì‚¬ìš©ë©ë‹ˆë‹¤.</summary>
     protected abstract void ApplyPassives(int grade);
-    /// <summary>ÇØ´ç ·¹º§ ´Ş¼º ½Ã ¹ß»ıÇÏ´Â Áö¼Ó È¿°ú¸¦ Àû¿ëÇÕ´Ï´Ù. ·¹º§ »ó½Â ½Ã »ç¿ëµË´Ï´Ù.</summary>
+    /// <summary>í•´ë‹¹ ë ˆë²¨ ë‹¬ì„± ì‹œ ë°œìƒí•˜ëŠ” ì§€ì† íš¨ê³¼ë¥¼ ì ìš©í•©ë‹ˆë‹¤. ë ˆë²¨ ìƒìŠ¹ ì‹œ ì‚¬ìš©ë©ë‹ˆë‹¤.</summary>
     protected abstract void ApplyPassives(int grade, int level);
+  }
+  public enum MainProfession {
+    Management, Survival, Gathering, Crafting, Combat
   }
   public class P_StockManagement : Profession
   {
-    public override string Name => "¹°Ç° °ü¸®";
-    public override string Description => "¹°Ç°À» È¿À²ÀûÀ¸·Î °ü¸®ÇÏ´Â ±â¼úÀÔ´Ï´Ù.";
+    public override string Name => "ë¬¼í’ˆ ê´€ë¦¬";
+    public override string Description => "ë¬¼í’ˆì„ íš¨ìœ¨ì ìœ¼ë¡œ ê´€ë¦¬í•˜ëŠ” ê¸°ìˆ ì…ë‹ˆë‹¤.";
+    public override MainProfession MainProfession => MainProfession.Management;
     public override int MaxGrade => 10;
     public override int[] MaxLevel => new int[] { 20, 25, 30, 35, 40, 45, 50, 50, 50 };
 
     #region Values
-    /// <summary>Àç°í °ü¸® ¼öÄ¡¸¦ ³ªÅ¸³À´Ï´Ù.</summary>
+    /// <summary>ì¬ê³  ê´€ë¦¬ ìˆ˜ì¹˜ë¥¼ ë‚˜íƒ€ëƒ…ë‹ˆë‹¤.</summary>
     public int StockChecking { get; protected set; } = 10;
-    /// <summary>°ø°£ Áö°¢ ¼öÄ¡¸¦ ³ªÅ¸³À´Ï´Ù.</summary>
+    /// <summary>ê³µê°„ ì§€ê° ìˆ˜ì¹˜ë¥¼ ë‚˜íƒ€ëƒ…ë‹ˆë‹¤.</summary>
     public int SpatialPerception { get; protected set; } = 10;
 
-    /// <summary>Àç°í ÆÄ¾Ç ÀÛ¾÷ÀÇ ¼öÇà ½Ã°£À» Á¶Á¤ÇÕ´Ï´Ù.</summary>
+    /// <summary>ì¬ê³  íŒŒì•… ì‘ì—…ì˜ ìˆ˜í–‰ ì‹œê°„ì„ ì¡°ì •í•©ë‹ˆë‹¤.</summary>
     public float StocktakingTimeModifier { get; protected set; } = 1f;
-    /// <summary>Àç°í ÆÄ¾Ç ÀÛ¾÷ÀÇ Áö¼Ó ½Ã°£À» Á¶Á¤ÇÕ´Ï´Ù.</summary>
+    /// <summary>ì¬ê³  íŒŒì•… ì‘ì—…ì˜ ì§€ì† ì‹œê°„ì„ ì¡°ì •í•©ë‹ˆë‹¤.</summary>
     public float StocktakingDurationModifier { get; protected set; } = 1f;
-    /// <summary>ÃÖÀûÈ­ ÀÛ¾÷ÀÇ ¼öÇà ½Ã°£À» Á¶Á¤ÇÕ´Ï´Ù.</summary>
+    /// <summary>ìµœì í™” ì‘ì—…ì˜ ìˆ˜í–‰ ì‹œê°„ì„ ì¡°ì •í•©ë‹ˆë‹¤.</summary>
     public float UtilizationTimeModifier { get; protected set; } = 1f;
-    /// <summary>ÃÖÀûÈ­ ÀÛ¾÷ÀÇ Áö¼Ó ½Ã°£À» Á¶Á¤ÇÕ´Ï´Ù.</summary>
+    /// <summary>ìµœì í™” ì‘ì—…ì˜ ì§€ì† ì‹œê°„ì„ ì¡°ì •í•©ë‹ˆë‹¤.</summary>
     public float UtilizationDurationModifier { get; protected set; } = 1f;
-    /// <summary>È®Àå ÀÛ¾÷ÀÇ ¼öÇà ½Ã°£À» Á¶Á¤ÇÕ´Ï´Ù.</summary>
+    /// <summary>í™•ì¥ ì‘ì—…ì˜ ìˆ˜í–‰ ì‹œê°„ì„ ì¡°ì •í•©ë‹ˆë‹¤.</summary>
     public float ExpansionTimeModifier { get; protected set; } = 1f;
-    /// <summary>°³¼± ÀÛ¾÷ÀÇ ¼Ò¸ğ ÀÚ¿ø ºñÀ²À» Á¶Á¤ÇÕ´Ï´Ù.</summary>
+    /// <summary>ê°œì„  ì‘ì—…ì˜ ì†Œëª¨ ìì› ë¹„ìœ¨ì„ ì¡°ì •í•©ë‹ˆë‹¤.</summary>
     public float ImprovementResourceModifier { get; protected set; } = 1f;
-    /// <summary>ÁøÇà Áß´ÜÀÌ ¹ß»ıÇÒ È®·üÀ» Á¶Á¤ÇÕ´Ï´Ù.</summary>
+    /// <summary>ì§„í–‰ ì¤‘ë‹¨ì´ ë°œìƒí•  í™•ë¥ ì„ ì¡°ì •í•©ë‹ˆë‹¤.</summary>
     public float InterruptionProbabilityModifier { get; protected set; } = 1f;
 
-    /// <summary>±ÇÀå Á¶°Ç ³» ¼÷·Ãµµ º¸³Ê½º¸¦ Á¶Á¤ÇÕ´Ï´Ù.</summary>
+    /// <summary>ê¶Œì¥ ì¡°ê±´ ë‚´ ìˆ™ë ¨ë„ ë³´ë„ˆìŠ¤ë¥¼ ì¡°ì •í•©ë‹ˆë‹¤.</summary>
     public float RecommendedProficiencyModifier { get; protected set; } = 1f;
-    /// <summary>°¢ µî±Şº° ¼÷·Ãµµ º¸³Ê½º¸¦ Á¶Á¤ÇÕ´Ï´Ù.</summary>
-    public float ProficiencyModifier_Tier1 { get; protected set; } = 1f; // ±âÃÊ
-    public float ProficiencyModifier_Tier2 { get; protected set; } = 1f; // ÃÊ±Ş
-    public float ProficiencyModifier_Tier3 { get; protected set; } = 1f; // Áß±Ş
-    public float ProficiencyModifier_Tier4 { get; protected set; } = 1f; // °í±Ş
-    public float ProficiencyModifier_Tier5 { get; protected set; } = 1f; // »ó±Ş
-    public float ProficiencyModifier_Tier6 { get; protected set; } = 1f; // Æ¯±Ş
+    /// <summary>ê° ë“±ê¸‰ë³„ ìˆ™ë ¨ë„ ë³´ë„ˆìŠ¤ë¥¼ ì¡°ì •í•©ë‹ˆë‹¤.</summary>
+    public float ProficiencyModifier_Tier1 { get; protected set; } = 1f; // ê¸°ì´ˆ
+    public float ProficiencyModifier_Tier2 { get; protected set; } = 1f; // ì´ˆê¸‰
+    public float ProficiencyModifier_Tier3 { get; protected set; } = 1f; // ì¤‘ê¸‰
+    public float ProficiencyModifier_Tier4 { get; protected set; } = 1f; // ê³ ê¸‰
+    public float ProficiencyModifier_Tier5 { get; protected set; } = 1f; // ìƒê¸‰
+    public float ProficiencyModifier_Tier6 { get; protected set; } = 1f; // íŠ¹ê¸‰
     #endregion
 
     public P_StockManagement(int grade, int level, int proficiency) {
@@ -127,39 +132,39 @@ namespace TRIdle.Game
     }
     protected override void ApplyPassives(int grade) {
       switch (grade) {
-        //TODO °¢ ¼öÄ¡ ¹× ÀÛ¾÷ ±¸Çö
+        //TODO ê° ìˆ˜ì¹˜ ë° ì‘ì—… êµ¬í˜„
         case 1:
-          // ±âÃÊ ¹°Ç° °ü¸® °Ç¹° ÇØ±İ
+          // ê¸°ì´ˆ ë¬¼í’ˆ ê´€ë¦¬ ê±´ë¬¼ í•´ê¸ˆ
           ProficiencyModifier_Tier1 = 4f;
           break;
         case 2:
           ProficiencyModifier_Tier1 = 1f;
           break;
         case 3:
-          // ÃÊ±Ş ¹°Ç° °ü¸® °Ç¹° ÇØ±İ
+          // ì´ˆê¸‰ ë¬¼í’ˆ ê´€ë¦¬ ê±´ë¬¼ í•´ê¸ˆ
           ProficiencyModifier_Tier2 = 2.5f;
           break;
         case 4:
           ProficiencyModifier_Tier2 = 1f;
           break;
         case 5:
-          // Áß±Ş ¹°Ç° °ü¸® °Ç¹° ÇØ±İ
+          // ì¤‘ê¸‰ ë¬¼í’ˆ ê´€ë¦¬ ê±´ë¬¼ í•´ê¸ˆ
           ProficiencyModifier_Tier3 = 1.75f;
           break;
         case 6:
-          // ÀúÀå°í È®Àå ÀÛ¾÷ ÇØ±İ
+          // ì €ì¥ê³  í™•ì¥ ì‘ì—… í•´ê¸ˆ
           ProficiencyModifier_Tier3 = 1f;
           break;
         case 7:
-          // °í±Ş ¹°Ç° °ü¸® °Ç¹° ÇØ±İ
+          // ê³ ê¸‰ ë¬¼í’ˆ ê´€ë¦¬ ê±´ë¬¼ í•´ê¸ˆ
           ProficiencyModifier_Tier4 = 1.5f;
           break;
         case 8:
-          // ÁıÀûµµ °³¼± ÀÛ¾÷ ÇØ±İ
+          // ì§‘ì ë„ ê°œì„  ì‘ì—… í•´ê¸ˆ
           ProficiencyModifier_Tier4 = 1f;
           break;
         case 9:
-          // »ó±Ş ¹°Ç° °ü¸® °Ç¹° ÇØ±İ
+          // ìƒê¸‰ ë¬¼í’ˆ ê´€ë¦¬ ê±´ë¬¼ í•´ê¸ˆ
           ProficiencyModifier_Tier5 = 1.25f;
           break;
         case 10:
@@ -212,4 +217,6 @@ namespace TRIdle.Game
       }
     }
   }
+
+
 }

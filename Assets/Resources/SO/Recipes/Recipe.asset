@@ -1,0 +1,63 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 48f8d63972fe7034f9b4d6fc12545ba2, type: 3}
+  m_Name: Recipe
+  m_EditorClassIdentifier: 
+  uName: 
+  tooltip: 
+  requirements:
+  - _foldout: 1
+    uName: Sample
+    amount: 3
+    levelRange:
+      use: 1
+      min: 1
+      max: 100
+      cap: 100
+    tags:
+    - _foldout: 0
+      tag: {fileID: 85063756444250596, guid: 22d56b7e1fea26e4fb433c6760207d06, type: 3}
+      levelRange:
+        use: 0
+        min: 1
+        max: 5
+        cap: 5
+    - _foldout: 0
+      tag: {fileID: 0}
+      levelRange:
+        use: 0
+        min: 1
+        max: 1
+        cap: 1
+    attributes: 0b000000
+  tools:
+  - _foldout: 0
+    uName: SampleTool
+    amount: 1
+    levelRange:
+      use: 1
+      min: 15
+      max: 100
+      cap: 100
+    tags: []
+    attributes: 26000000
+  result:
+  - _foldout: 1
+    prefix: 
+    useItemName: 0
+    itemNameIndex: 0
+    newItemName: 
+    suffix: 
+    mt_level: 0
+    itemLevelIndex: 0
+    level: 0
+    amount: 0
