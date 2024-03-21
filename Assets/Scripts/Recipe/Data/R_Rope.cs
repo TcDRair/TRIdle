@@ -8,6 +8,8 @@ namespace TRIdle.Game.Recipe
       return new();
     }
 
-    
+    public override TItem RunRecipe() {
+      return new();
+    }
   }
 }

@@ -65,12 +65,12 @@ namespace TRIdle.Game.Recipe
       var recipe = target as RecipeSerialized;
 
       EditorGUILayout.BeginHorizontal();
-      EditorGUILayout.LabelField("Recipe Name", Bold);
+      EditorGUILayout.LabelField("Recipe Name", Bold, GUILayout.Width(150));
       recipe.uName = EditorGUILayout.TextField(recipe.uName);
       EditorGUILayout.EndHorizontal();
       EditorGUILayout.BeginHorizontal();
-      EditorGUILayout.LabelField("Tooltip", Bold);
-      recipe.tooltip = EditorGUILayout.TextArea(recipe.tooltip, GUILayout.ExpandWidth(true), GUILayout.Height(EditorGUIUtility.singleLineHeight * 5));
+      EditorGUILayout.LabelField("Tooltip", Bold, GUILayout.Width(150));
+      recipe.tooltip = EditorGUILayout.TextArea(recipe.tooltip, GUILayout.Height(50));
       EditorGUILayout.EndHorizontal();
       EditorGUILayout.Space();
 
@@ -80,7 +80,7 @@ namespace TRIdle.Game.Recipe
       tools.DoLayoutList();
       EditorGUILayout.Space();
       EditorGUILayout.LabelField("Result", Bold);
-      EditorGUILayout.PropertyField(serializedObject.FindProperty("Result"));
+      EditorGUILayout.PropertyField(serializedObject.FindProperty("result"));
 
       serializedObject.ApplyModifiedProperties();
     }

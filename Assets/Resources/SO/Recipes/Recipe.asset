@@ -12,10 +12,10 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 48f8d63972fe7034f9b4d6fc12545ba2, type: 3}
   m_Name: Recipe
   m_EditorClassIdentifier: 
-  uName: 
-  tooltip: 
+  uName: Sample Recipe
+  tooltip: Sample tooltip
   requirements:
-  - _foldout: 1
+  - _foldout: 0
     uName: Sample
     amount: 3
     levelRange:
@@ -25,19 +25,12 @@ MonoBehaviour:
       cap: 100
     tags:
     - _foldout: 0
-      tag: {fileID: 85063756444250596, guid: 22d56b7e1fea26e4fb433c6760207d06, type: 3}
-      levelRange:
-        use: 0
-        min: 1
-        max: 5
-        cap: 5
-    - _foldout: 0
-      tag: {fileID: 0}
+      data: {fileID: 85063756444250596, guid: 22d56b7e1fea26e4fb433c6760207d06, type: 3}
       levelRange:
         use: 0
         min: 1
         max: 1
-        cap: 1
+        cap: 5
     attributes: 0b000000
   tools:
   - _foldout: 0
@@ -50,14 +43,4 @@ MonoBehaviour:
       cap: 100
     tags: []
     attributes: 26000000
-  result:
-  - _foldout: 1
-    prefix: 
-    useItemName: 0
-    itemNameIndex: 0
-    newItemName: 
-    suffix: 
-    mt_level: 0
-    itemLevelIndex: 0
-    level: 0
-    amount: 0
+  result: {fileID: 0}
