@@ -7,44 +7,46 @@ namespace TRIdle.Game
 {
   public class ActionUI : MonoBehaviour
   {
-    public RButton RB_Explore;
+    public RButton RB_WoodCutting;
     public TextMeshProUGUI T_ExploreProficiency;
 
-    float m_exploreProgress;
-    bool m_exploreActive;
+    float proficiency = 0;
+    float m_cuttingProgress;
+    bool m_cuttingActive;
+    const float CUT_TIME = 5;
 
     protected void Start() {
-      m_exploreActive = true;
-      RB_ExploreClicked(); // reset
+      m_cuttingActive = true;
+      RB_WCClicked(); // reset
 
-      RB_Explore.Button.onClick.AddListener(RB_ExploreClicked);
+      RB_WoodCutting.Button.onClick.AddListener(RB_WCClicked);
     }
 
     protected void Update() {
-      RB_Explore.Progress.fillAmount = m_exploreProgress / 10;
-      if (m_exploreActive && (m_exploreProgress += Time.deltaTime) >= 10)
+      RB_WoodCutting.Progress.fillAmount = m_cuttingProgress / CUT_TIME;
+      if (m_cuttingActive && (m_cuttingProgress += Time.deltaTime) >= CUT_TIME)
         RB_ExploreCompleted();
     }
 
 
-    public void RB_ExploreClicked() {
-      m_exploreProgress = 0;
-      if (m_exploreActive = !m_exploreActive) {
+    public void RB_WCClicked() {
+      m_cuttingProgress = 0;
+      if (m_cuttingActive = !m_cuttingActive) {
         // start explore
-        RB_Explore.Text.text = "탐색 중...";
-        RB_Explore.Image.color = Color.gray;
+        RB_WoodCutting.Text.text = "탐색 진행 중...";
+        RB_WoodCutting.Image.color = Color.gray;
       } else {
         // cancel explore
-        RB_Explore.Text.text = "탐색 시작";
-        RB_Explore.Image.color = Color.white;
+        RB_WoodCutting.Text.text = "탐색 시작";
+        RB_WoodCutting.Image.color = Color.white;
       }
     }
-
+    
     public void RB_ExploreCompleted() {
       // add reward + restart explore
-      Storage.R.Professions.CommodityManagement.AddProficiency(1);
-      T_ExploreProficiency.text = $"Prof: {Storage.R.Professions.CommodityManagement.Proficiency}";
-      m_exploreProgress = 0;
+      proficiency += 1;
+      T_ExploreProficiency.text = $"Prof: {proficiency}";
+      m_cuttingProgress = 0;
     }
   }
 }

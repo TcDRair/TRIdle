@@ -12,7 +12,7 @@ GameObject:
   - component: {fileID: 8810506445766892756}
   - component: {fileID: 8712095576057444443}
   - component: {fileID: 6851751248038373247}
-  - component: {fileID: 8660234729636335588}
+  - component: {fileID: 6034361761654113530}
   m_Layer: 5
   m_Name: RButton
   m_TagString: Untagged
@@ -123,7 +123,7 @@ MonoBehaviour:
   m_OnClick:
     m_PersistentCalls:
       m_Calls: []
---- !u!114 &8660234729636335588
+--- !u!114 &6034361761654113530
 MonoBehaviour:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
@@ -132,7 +132,7 @@ MonoBehaviour:
   m_GameObject: {fileID: 2358532957768974060}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 6657982b8acfbcf458d77d5779f43afa, type: 3}
+  m_Script: {fileID: 11500000, guid: fb4a610cdb690d642a858bda1e6d6b32, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
   text: {fileID: 3315260971752955522}

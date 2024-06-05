@@ -4,7 +4,10 @@ namespace TRIdle
 {
   public abstract class ObjectLoader
   {
-    public abstract IEnumerator Load();
+    protected abstract IEnumerator LoadObject();
+    public void Load() {
+      
+    }
 
     private static float _elapsed = 0;
     private const float TICK = .025f;
@@ -19,4 +22,6 @@ namespace TRIdle
       }
     }
   }
+
+
 }
