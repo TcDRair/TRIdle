@@ -7,7 +7,7 @@ namespace TRIdle.Game.Skill.Action
 {
   public class ActionUI : MonoBehaviour
   {
-    public RButton RB_WoodCutting;
+    public ProgressButton RB_WoodCutting;
     public TextMeshProUGUI T_ExploreProficiency;
 
     float proficiency = 0;

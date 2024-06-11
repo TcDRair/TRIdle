@@ -31,7 +31,7 @@ namespace TRIdle.Game.Skill
       Skill = skill;
 
       //TODO Init
-      Category.Button.onClick.AddListener(() => { });
+      Category.Button.onClick.AddListener(() => SkillMainPanel.Panel.DrawSkill(Skill));
 
       Update(); // Invoke also at first frame
     }
@@ -41,7 +41,7 @@ namespace TRIdle.Game.Skill
         Category.Name.text = Skill.Name;
         Category.Level.text = $"[{Skill.Level} / {Skill.MaxLevel}]";
         Category.Icon.sprite = Skill.Progress switch {
-          _ => null
+          _ => Skill.Icon
         };
       }
     }

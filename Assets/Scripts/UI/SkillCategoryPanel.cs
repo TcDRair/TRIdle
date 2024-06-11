@@ -7,7 +7,7 @@ namespace TRIdle.Game.Skill
 {
   public class SkillCategoryPanel : MonoBehaviour
   {
-    static SkillCategoryPanel Panel;
+    public static SkillCategoryPanel Panel { get; private set; }
     [SerializeField] RectTransform Content;
     [SerializeField] GameObject SkillUIPanel;
 
