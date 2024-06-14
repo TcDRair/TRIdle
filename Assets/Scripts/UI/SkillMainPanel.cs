@@ -9,6 +9,7 @@ using TMPro;
 namespace TRIdle.Game.Skill
 {
   using Action;
+  using UnityEditor.Experimental.GraphView;
 
   public class SkillMainPanel : MonoBehaviour
   {
@@ -19,6 +20,12 @@ namespace TRIdle.Game.Skill
         Debug.LogAssertion($"Multiple panel({nameof(SkillMainPanel)}) activation is invalid.");
         Destroy(this);
       } else Panel = this;
+    }
+
+    void Update() {
+      if (currentSkill != null) {
+        main.Proficiency.text = $"Proficiency : {currentSkill.Proficiency}";
+      }
     }
 
     #region Inspector
@@ -57,14 +64,16 @@ namespace TRIdle.Game.Skill
       title.Label.text = skill.Name;
       title.Icon.sprite = skill.Icon;
 
+
       foreach (var a in skill.Actions) {
         var p = Instantiate(main.ActionButton, main.ButtonPanel).GetComponent<ProgressButton>();
-        p.Button.onClick.AddListener(() => DrawDescription(a));
+        p.Button.onClick.AddListener(() => DoAction(a, p));
       }
     }
 
-    void DrawDescription(ActionBase action) {
+    void DoAction(ActionBase action, ProgressButton button) {
       main.Description.text = action.Description;
+      button.StartProgress(action);
     }
   }
 }

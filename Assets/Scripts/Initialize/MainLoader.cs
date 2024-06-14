@@ -1,7 +1,7 @@
 using UnityEngine;
 using TMPro;
 
-namespace TRIdle.System.Loader
+namespace TRIdle.Internal.Loader
 {
   public class MainLoader : MonoBehaviour
   {

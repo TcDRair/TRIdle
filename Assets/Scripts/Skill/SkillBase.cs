@@ -12,11 +12,11 @@ namespace TRIdle.Game.Skill
   [Serializable]
   public abstract class SkillBase
   {
-    public string Name { get; protected set; }
-    public int Level { get; protected set; }
-    public int Proficiency { get; protected set; }
-    public int MaxLevel { get; protected set; }
-    protected string IconPath { get; set; }
+    public string Name { get; protected set; } = Const.PLACEHOLDER;
+    public int Level { get; protected set; } = 1;
+    public int Proficiency { get; protected set; } = 1;
+    public int MaxLevel { get; protected set; } = -1;
+    protected string IconPath { get; set; } = "Sprite/PlaceHolder";
     public Sprite Icon => Resources.Load<Sprite>(IconPath);
 
     public enum ProgressType
@@ -41,7 +41,16 @@ namespace TRIdle.Game.Skill
       IconPath = "Sprite/WoodCutting";
 
       Actions = new[] {
-        new ActionBase() { Name = "벌목", Description = "도끼로 나무를 자른다!" }
+        new ActionBase() {
+          Name = "벌목",
+          Description = "도끼로 나무를 자른다!",
+          Duration = 4,
+          Repeatable = true,
+
+          OnPerform = () => {
+            Proficiency += 1;
+          }
+        }
       };
     }
 
