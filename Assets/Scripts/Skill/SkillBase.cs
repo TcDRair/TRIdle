@@ -48,7 +48,17 @@ namespace TRIdle.Game.Skill
           Repeatable = true,
 
           OnPerform = () => {
-            Proficiency += 1;
+            Proficiency += 4;
+          }
+        },
+        new() {
+          Name = "잔가지 회수",
+          Description = "벌목한 나무의 잔가지를 회수한다!",
+          Duration = 4,
+          Repeatable = true,
+
+          OnPerform = () => {
+            Proficiency += 2;
           }
         }
       };

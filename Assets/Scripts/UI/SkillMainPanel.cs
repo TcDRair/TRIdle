@@ -52,6 +52,7 @@ namespace TRIdle.Game.Skill
     #endregion
 
     private SkillBase currentSkill;
+    private ProgressButton current;
 
     public void ToggleDetailButton() {
       // TODO : Toggle Canvas Group of Detail Panel
@@ -59,21 +60,23 @@ namespace TRIdle.Game.Skill
 
     public void DrawSkill(SkillBase skill) {
       if (skill == currentSkill) return;
-
       currentSkill = skill;
       title.Label.text = skill.Name;
       title.Icon.sprite = skill.Icon;
 
-
+      main.ButtonPanel.DestroyAllChildren();
       foreach (var a in skill.Actions) {
-        var p = Instantiate(main.ActionButton, main.ButtonPanel).GetComponent<ProgressButton>();
-        p.Button.onClick.AddListener(() => DoAction(a, p));
+        var b = Instantiate(main.ActionButton, main.ButtonPanel).GetComponent<ProgressButton>();
+        b.SetAction(a, b => ChangeCurrentAction(b));
       }
     }
 
-    void DoAction(ActionBase action, ProgressButton button) {
-      main.Description.text = action.Description;
-      button.StartProgress(action);
+    void ChangeCurrentAction(ProgressButton button) {
+      if (button == current) return;
+
+      if (current != null) current.Toggle();
+      current = button;
+      main.Description.text = button.Action.Description;
     }
   }
 }

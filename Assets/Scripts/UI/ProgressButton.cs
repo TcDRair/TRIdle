@@ -4,6 +4,8 @@ using UnityEngine.UI;
 
 namespace TRIdle.Game
 {
+  using System;
+
   using Skill.Action;
 
   public class ProgressButton : MonoBehaviour {
@@ -15,28 +17,39 @@ namespace TRIdle.Game
     public Button Button => button;
     public Image Image => image;
     public Image ProgressBar => progress;
+    event Action<ProgressButton> OnStart;
 
+    public ActionBase Action { get; private set; }
+    public bool OnGoing { get; private set; }
     public float Progress => progressValue / progressDuration;
     float progressValue, progressDuration;
-    ActionBase current;
-    public void StartProgress(ActionBase action) {
+
+
+    public void SetAction(ActionBase action, params Action<ProgressButton>[] startActions) {
       progressValue = 0;
-      progressDuration =action.Duration;
-      current = action;
+      progressDuration = action.Duration;
+      Action = action;
+      text.text = action.Name;
+      foreach (var a in startActions) OnStart += a;
     }
-    public void StopProgress() {
-      progressValue = 0;
-      progress.fillAmount = 0;
-      current = null;
+    public void Toggle() {
+      if (OnGoing = !OnGoing) {
+        OnStart?.Invoke(this);
+      } else {
+        progressValue = 0;
+        progress.fillAmount = 0;
+      }
     }
 
     void Update() {
-      if (current != null) {
+      progress.fillAmount = Progress;
+
+      if (Action != null && OnGoing) {
         progressValue += Time.deltaTime;
-        if ((progress.fillAmount = Progress) >= 1) {
-          current.OnPerform?.Invoke();
+        if (Progress >= 1) {
+          Action.OnPerform?.Invoke();
           progressValue = 0;
-          if (current.Repeatable is false) current = null;
+          if (Action.Repeatable is false) Action = null;
         }
       }
     }
