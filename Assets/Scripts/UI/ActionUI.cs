@@ -3,7 +3,7 @@ using TMPro;
 using UnityEngine;
 
 
-namespace TRIdle.Game
+namespace TRIdle.Game.Skill.Action
 {
   public class ActionUI : MonoBehaviour
   {
@@ -41,7 +41,7 @@ namespace TRIdle.Game
         RB_WoodCutting.Image.color = Color.white;
       }
     }
-    
+
     public void RB_ExploreCompleted() {
       // add reward + restart explore
       proficiency += 1;
