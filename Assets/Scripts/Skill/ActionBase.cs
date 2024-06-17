@@ -1,3 +1,4 @@
+using System;
 using UnityEngine;
 
 namespace TRIdle.Game.Skill.Action
@@ -9,7 +10,15 @@ namespace TRIdle.Game.Skill.Action
 
     public float Duration { get; set; } = 4;
     public bool Repeatable { get; set; } = true;
+    public bool Pausable { get; set; } = false;
 
-    public System.Action OnPerform { get; set; }
+    public SkillBase Skill { get; private set; }
+    public ActionBase(SkillBase skill)
+    {
+      Skill = skill;
+    }
+
+    public Func<bool> CanPerform { get; set; } = () => true;
+    public System.Action OnPerform { get; set; } = () => { };
   }
 }

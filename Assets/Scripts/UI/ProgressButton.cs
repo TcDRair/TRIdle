@@ -8,7 +8,8 @@ namespace TRIdle.Game
 
   using Skill.Action;
 
-  public class ProgressButton : MonoBehaviour {
+  public class ProgressButton : MonoBehaviour
+  {
     [SerializeField] private TextMeshProUGUI text;
     [SerializeField] private Button button;
     [SerializeField] private Image image, progress;
@@ -25,33 +26,44 @@ namespace TRIdle.Game
     float progressValue, progressDuration;
 
 
-    public void SetAction(ActionBase action, params Action<ProgressButton>[] startActions) {
+    public void SetAction(ActionBase action, params Action<ProgressButton>[] startActions)
+    {
       progressValue = 0;
       progressDuration = action.Duration;
       Action = action;
       text.text = action.Name;
       foreach (var a in startActions) OnStart += a;
     }
-    public void Toggle() {
-      if (OnGoing = !OnGoing) {
-        OnStart?.Invoke(this);
-      } else {
-        progressValue = 0;
-        progress.fillAmount = 0;
-      }
+
+    public void Toggle() => Toggle(!OnGoing);
+    public void Toggle(bool value) {
+      if (OnGoing = value) {
+        if (Action.CanPerform()) OnStart?.Invoke(this);
+      } else if (Action.Pausable is false) progressValue = 0;
     }
 
-    void Update() {
-      progress.fillAmount = Progress;
+    void Update()
+    {
+      button.interactable = Action.CanPerform();
 
-      if (Action != null && OnGoing) {
+      if (Action is not null && OnGoing)
+      {
+
         progressValue += Time.deltaTime;
-        if (Progress >= 1) {
+        if (Progress >= 1)
+        {
           Action.OnPerform?.Invoke();
           progressValue = 0;
-          if (Action.Repeatable is false) Action = null;
+
+          if (!Action.Repeatable || !Action.CanPerform())
+          {
+            // TODO : Inform Skill that the task is completed / interrupted.
+            OnGoing = false;
+          }
         }
       }
+
+      progress.fillAmount = Progress;
     }
   }
 }

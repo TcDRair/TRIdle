@@ -74,7 +74,7 @@ namespace TRIdle.Game.Skill
     void ChangeCurrentAction(ProgressButton button) {
       if (button == current) return;
 
-      if (current != null) current.Toggle();
+      if (current != null) current.Toggle(false);
       current = button;
       main.Description.text = button.Action.Description;
     }
