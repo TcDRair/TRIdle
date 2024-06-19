@@ -4,3 +4,6 @@ root = true
 # 모든 파일
 [*]
 charset = utf-8
+
+# IDE0130: 네임스페이스가 폴더 구조와 일치하지 않습니다.
+dotnet_style_namespace_match_folder = false

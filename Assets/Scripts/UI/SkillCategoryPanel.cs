@@ -18,7 +18,13 @@ namespace TRIdle.Game.Skill
       } else Panel = this;
 
       //DEBUG
-      Initialize(new[] { new SMPSkill_WoodCutting() });
+      if (Player.IsLoaded is false) Player.Load();
+      Initialize(Player.AllSkills);
+    }
+
+    //! DEBUG
+    void OnDestroy() {
+      Player.Save();
     }
 
     public void Initialize(IEnumerable<SkillBase> skills) {// TODO : Fetch SkillCategory data

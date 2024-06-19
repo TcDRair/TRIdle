@@ -7,9 +7,13 @@ using UnityEngine;
 namespace TRIdle.Game.Skill
 {
   using System.Linq;
-  using Action;
+  using System.Text.Json;
+    using System.Text.Json.Serialization;
+    using Action;
+  using Internal;
 
   [Serializable]
+  [JsonDerivedType(typeof(SMPSkill_WoodCutting))]
   public abstract class SkillBase
   {
     public string Name { get; protected set; } = Const.PLACEHOLDER;
@@ -17,8 +21,11 @@ namespace TRIdle.Game.Skill
     public int Proficiency { get; set; } = 1;
     public int MaxLevel { get; protected set; } = -1;
     protected string IconPath { get; set; } = "Sprite/PlaceHolder";
+    [JsonIgnore]
     public Sprite Icon => Resources.Load<Sprite>(IconPath);
 
+    [JsonIgnore]
+    public abstract ProgressType Progress { get; }
     public enum ProgressType
     {
       None,
@@ -31,15 +38,18 @@ namespace TRIdle.Game.Skill
       /// <summary>Task is interrupted by non-player action. Otherwise, use <see cref="Focused"/>.</summary>
       TaskInterrupted
     }
-    public abstract ProgressType Progress { get; }
 
     public ActionBase[] Actions { get; protected set; }
-    public ActionBase Current { get; protected set; }
+    [JsonIgnore]
+    public ActionBase DefaultAction { get; protected set; }
+    [JsonIgnore]
+    public ActionBase CurrentAction { get; protected set; }
+    // TODO : FocusedAction => SkillBase가 아니라 플레이어 코드 생성 후 거기에 생성
     public T GetAction<T>() where T : ActionBase => Actions.FirstOrDefault(a => a is T) as T;
   }
 
 
-  // SMP : Sample
+  //! Sample Skill
   public class SMPSkill_WoodCutting : SkillBase
   {
     public SMPSkill_WoodCutting()
@@ -90,6 +100,7 @@ namespace TRIdle.Game.Skill
           Amount--;
           Skill.Proficiency += 2;
         };
+        StackInfo = () => $"×{Amount}";
       }
     }
 
