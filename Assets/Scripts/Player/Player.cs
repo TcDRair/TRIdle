@@ -1,33 +1,83 @@
-using UnityEngine;
-using System.Text.Json;
+using System;
 using System.IO;
+using System.Linq;
+using System.Text.Json;
+
+using UnityEngine;
 
 namespace TRIdle.Game
 {
-  using System;
+  using System.Text.Json.Serialization;
   using Skill;
+
   public static class Player
   {
     public static bool IsLoaded { get; private set; } = false;
-    public static DateTime LastSave { get; private set; } = DateTime.Now;
-    public static SkillBase[] AllSkills { get; private set; } = new SkillBase[] {
-      woodCutting = new SMPSkill_WoodCutting()
-    };
 
-    public static SMPSkill_WoodCutting woodCutting;
-
-    static string FilePath => Application.persistentDataPath + "/player.json";
-    public static void Save()
+    public static class Serializer
     {
-      JsonSerializer.Serialize(new FileStream(FilePath, FileMode.Create), AllSkills, new JsonSerializerOptions { WriteIndented = true });
-      LastSave = DateTime.Now;
+      static string FilePath => Application.persistentDataPath + "/player.json";
+      static readonly JsonSerializerOptions JSOptions = new()
+      {
+        WriteIndented = true,
+        IgnoreReadOnlyProperties = true,
+        ReferenceHandler = ReferenceHandler.Preserve,
+      };
+
+      public static void Save()
+      {
+        if (!IsLoaded) return;
+
+        JsonSerializer.Serialize(new FileStream(FilePath, FileMode.Create), Skill.All, JSOptions);
+        State.LastSave = DateTime.Now;
+      }
+      public static void Load()
+      {
+        // Load player data
+        try
+        {
+          _skills = JsonSerializer.Deserialize<SkillBase[]>(
+            new FileStream(FilePath, FileMode.Open), JSOptions
+          ) ?? throw new Exception();
+        }
+        // If failed to load, load default data
+        catch
+        {
+          Debug.LogError("Failed to load player data. Loading default data.");
+
+          _skills = new SkillBase[]
+          {
+            new SB_WoodCutting(),
+          };
+          foreach (var skill in _skills)
+            skill.Initialize();
+        }
+        // Setup references and finish loading
+        finally {
+          foreach (var skill in _skills)
+            skill.SetupReference();
+          IsLoaded = true;
+        }
+      }
     }
 
-    public static void Load()
+    public static class State
     {
-      if (File.Exists(FilePath) is false) { IsLoaded = true; return; }
-      AllSkills = JsonSerializer.Deserialize<SkillBase[]>(new FileStream(FilePath, FileMode.Open));
-      IsLoaded = true;
+      public static DateTime LastSave { get; set; } = DateTime.MinValue;
+      public static SkillBase FocusSkill { get; set; }
+      public static ActionBase FocusAction { get; set; }
+    }
+
+    public static class Statistic
+    {
+
+    }
+
+    private static SkillBase[] _skills;
+    public static class Skill
+    {
+      public static SkillBase[] All => _skills;
+      public static T GetSkill<T>() where T : SkillBase => All.FirstOrDefault(s => s is T) as T;
     }
   }
 }

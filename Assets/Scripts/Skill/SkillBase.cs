@@ -1,4 +1,6 @@
 using System;
+using System.Linq;
+using System.Text.Json.Serialization;
 using System.Collections;
 using System.Collections.Generic;
 
@@ -6,28 +8,41 @@ using UnityEngine;
 
 namespace TRIdle.Game.Skill
 {
-  using System.Linq;
-  using System.Text.Json;
-    using System.Text.Json.Serialization;
-    using Action;
-  using Internal;
-
-  [Serializable]
-  [JsonDerivedType(typeof(SMPSkill_WoodCutting))]
+  [JsonDerivedType(typeof(SB_WoodCutting), typeDiscriminator: "WoodCutting")]
   public abstract class SkillBase
   {
-    public string Name { get; protected set; } = Const.PLACEHOLDER;
-    public int Level { get; protected set; } = 1;
-    public int Proficiency { get; set; } = 1;
-    public int MaxLevel { get; protected set; } = -1;
-    protected string IconPath { get; set; } = "Sprite/PlaceHolder";
+    #region Fixed Properties (Override Required)
+    [JsonIgnore]
+    public virtual string Name => Const.PLACEHOLDER;
+    [JsonIgnore]
+    public virtual string Description => Const.PLACEHOLDER;
     [JsonIgnore]
     public Sprite Icon => Resources.Load<Sprite>(IconPath);
+    #endregion
 
+    #region Serialized Properties (Re-assignable in Constructor)
+    [JsonInclude]
+    protected virtual string IconPath => "Sprite/PlaceHolder";
+    [JsonInclude]
+    public ActionBase[] Actions { get; protected set; }
+    [JsonInclude]
+    public int MaxLevel { get; protected set; } = -1;
+    [JsonInclude]
+    public int Level { get; protected set; } = 0;
+    [JsonInclude]
+    public float Proficiency { get; set; } = 0;
+
+    [JsonInclude]
+    public float ProficiencyBase { get; protected set; } = 10;
+    #endregion
+
+    #region State Properties (Override Optional)
     [JsonIgnore]
-    public abstract ProgressType Progress { get; }
+    public virtual ProgressType Progress =>
+      Player.State.FocusSkill == this ? ProgressType.Focused : ProgressType.None;
     public enum ProgressType
     {
+      /// <summary>Idle. Default state.</summary>
       None,
       /// <summary>Indicates the main panel is focusing this skill. Has lower priority than Tasks.</summary>
       Focused,
@@ -38,72 +53,73 @@ namespace TRIdle.Game.Skill
       /// <summary>Task is interrupted by non-player action. Otherwise, use <see cref="Focused"/>.</summary>
       TaskInterrupted
     }
+    
+    /// <summary>
+    /// Derive this to provide additional information for the skill.<br/>
+    /// Strongly recommended to name the derived record as <see langword="Stat"/>.
+    /// </summary>
+    public abstract record StatBase;
+    #endregion
 
-    public ActionBase[] Actions { get; protected set; }
+    #region Runtime Properties (+ Related Methods)
+    
+    #region Initialization
+    /// <summary>
+    /// Initialize the skill. Called when the skill is first created.<br/>
+    /// Caution: This process resets the skill to its initial state.
+    /// </summary>
+    public abstract void Initialize();
+    /// <summary>
+    /// Setup references for the skill. Called after all skills are loaded from the file.<br/>
+    /// Override this to setup custom references, except for actions.
+    /// </summary>
+    public virtual void SetupReference()
+    {
+      foreach (var action in Actions)
+        action.SetupReference(this);
+    }
+    #endregion
+
+    #region Default Action
     [JsonIgnore]
-    public ActionBase DefaultAction { get; protected set; }
+    private ActionBase _defaultAction;
     [JsonIgnore]
-    public ActionBase CurrentAction { get; protected set; }
-    // TODO : FocusedAction => SkillBase가 아니라 플레이어 코드 생성 후 거기에 생성
+    public ActionBase DefaultAction
+    {
+      get => _defaultAction;
+      set
+      {
+        if (CanBeDefaultAction(value))
+          _defaultAction = value;
+      }
+    }
+    /// <summary>
+    /// Check if the action can be always performed, so that it can be set as the default action.
+    /// </summary>
+    public bool CanBeDefaultAction<T>(T action) where T : ActionBase
+      => action.GetType().GetMethod("CanPerform").DeclaringType == typeof(ActionBase);
+    #endregion
+
+    #region Get Action
+    /// <summary>
+    /// Get the first action that matches the type.
+    /// </summary>
+    /// <typeparam name="T">Type of the action to find.</typeparam>
+    /// <returns>First action that matches the type. Null if not found.</returns>
     public T GetAction<T>() where T : ActionBase => Actions.FirstOrDefault(a => a is T) as T;
-  }
-
-
-  //! Sample Skill
-  public class SMPSkill_WoodCutting : SkillBase
-  {
-    public SMPSkill_WoodCutting()
+    /// <summary>
+    /// Get the first action that matches the type.
+    /// </summary>
+    /// <typeparam name="T">Type of the action to find.</typeparam>
+    /// <param name="action">First action that matches the type.</param>
+    /// <returns>True if found, false otherwise.</returns>
+    public bool GetAction<T>(out T action) where T : ActionBase
     {
-      Name = "벌목";
-      Level = 5;
-      MaxLevel = 99;
-      IconPath = "Sprite/WoodCutting";
-
-      Actions = new ActionBase[] {
-        new SMPAction_WoodCutting(this),
-        new SMPAction_StickGathering(this)
-      };
+      action = GetAction<T>();
+      return action != null;
     }
+    #endregion
 
-    public class SMPAction_WoodCutting : ActionBase
-    {
-      public SMPAction_WoodCutting(SkillBase Skill) : base(Skill)
-      {
-        Name = "벌목";
-        Description = "도끼로 나무를 자른다!";
-        Duration = 10;
-        Repeatable = true;
-        Pausable = true;
-
-        OnPerform = () =>
-        {
-          Skill.Proficiency += 2;
-          if (Skill.GetAction<SMPAction_StickGathering>() is var action)
-            action.Amount += 2;
-        };
-      }
-    }
-
-    public class SMPAction_StickGathering : ActionBase
-    {
-      public int Amount { get; set; } = 0;
-      public SMPAction_StickGathering(SkillBase Skill) : base(Skill)
-      {
-        Name = "잔가지 회수";
-        Description = "벌목한 나무의 잔가지를 회수한다!";
-        Duration = 4;
-        Repeatable = true;
-
-        CanPerform = () => Amount > 0;
-        OnPerform = () =>
-        {
-          Amount--;
-          Skill.Proficiency += 2;
-        };
-        StackInfo = () => $"×{Amount}";
-      }
-    }
-
-    public override ProgressType Progress => ProgressType.None;
+    #endregion
   }
 }

@@ -18,13 +18,13 @@ namespace TRIdle.Game.Skill
       } else Panel = this;
 
       //DEBUG
-      if (Player.IsLoaded is false) Player.Load();
-      Initialize(Player.AllSkills);
+      if (Player.IsLoaded is false) Player.Serializer.Load();
+      Initialize(Player.Skill.All);
     }
 
     //! DEBUG
     void OnDestroy() {
-      Player.Save();
+      Player.Serializer.Save();
     }
 
     public void Initialize(IEnumerable<SkillBase> skills) {// TODO : Fetch SkillCategory data

@@ -8,25 +8,12 @@ using TMPro;
 
 namespace TRIdle.Game.Skill
 {
-  using Action;
   using UnityEditor.Experimental.GraphView;
 
   public class SkillMainPanel : MonoBehaviour
   {
     public static SkillMainPanel Panel { get; private set; }
 
-    void Awake() {
-      if (Panel != null) {
-        Debug.LogAssertion($"Multiple panel({nameof(SkillMainPanel)}) activation is invalid.");
-        Destroy(this);
-      } else Panel = this;
-    }
-
-    void Update() {
-      if (currentSkill != null) {
-        main.Proficiency.text = $"Proficiency : {currentSkill.Proficiency}";
-      }
-    }
 
     #region Inspector
     [Serializable]
@@ -46,38 +33,67 @@ namespace TRIdle.Game.Skill
       public RectTransform ButtonPanel;
       public GameObject ActionButton;
       public TextMeshProUGUI Proficiency;
-      public TextMeshProUGUI Description;
+      public TextMeshProUGUI SkillDescription;
+      public TextMeshProUGUI ActionDescription;
     }
     [SerializeField] Main main;
     #endregion
 
     private SkillBase currentSkill;
-    private ActionButton current;
+    private ActionBase current;
 
-    public void ToggleDetailButton() {
+    void Awake()
+    {
+      if (Panel != null)
+      {
+        Debug.LogAssertion($"Multiple panel({nameof(SkillMainPanel)}) activation is invalid.");
+        Destroy(this);
+      }
+      else Panel = this;
+    }
+
+    void Update()
+    {
+      UpdateMainPanel();
+    }
+
+    public void ToggleDetailButton()
+    {
       // TODO : Toggle Canvas Group of Detail Panel
     }
 
-    public void DrawSkill(SkillBase skill) {
+    public void DrawSkill(SkillBase skill)
+    {
       if (skill == currentSkill) return;
       currentSkill = skill;
       title.Label.text = skill.Name;
       title.Icon.sprite = skill.Icon;
 
       main.ButtonPanel.DestroyAllChildren();
-      foreach (var a in skill.Actions) {
+      foreach (var a in skill.Actions)
+      {
+        a.Callbacks.OnStart += () => ChangeCurrentAction(a);
         var b = Instantiate(main.ActionButton, main.ButtonPanel).GetComponent<ActionButton>();
-        b.SetAction(a);
-        b.OnStart += button => ChangeCurrentAction(button);
+        b.Action = a;
+      }
+    }
+    void UpdateMainPanel()
+    {
+      if (currentSkill == null)
+        main.Proficiency.text = main.SkillDescription.text = main.ActionDescription.text = "";
+      else
+      {
+        main.Proficiency.text = $"Proficiency : {currentSkill.Proficiency}";
+        main.SkillDescription.text = currentSkill.Description;
+        main.ActionDescription.text = (current == null) ? "" : current.Description;
       }
     }
 
-    void ChangeCurrentAction(ActionButton button) {
-      if (button == current) return;
-
-      if (current != null) current.Off();
-      current = button;
-      main.Description.text = button.Action.Description;
+    void ChangeCurrentAction(ActionBase action)
+    {
+      if (action == current) return;
+      current?.Callbacks.End();
+      current = action;
     }
   }
 }

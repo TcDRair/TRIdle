@@ -17,5 +17,12 @@ namespace TRIdle
         Object.Destroy(tr.GetChild(i).gameObject);
       }
     }
+
+    /// <summary>
+    /// Rounds the value to the nearest integer, with a probability of rounding up.
+    /// </summary>
+    public static int ProbabilisticRound(this float value) => (int)value + (Random.value < value % 1 ? 1 : 0);
+    /// <summary>A shorthand for <see cref="ProbabilisticRound(float)"/>.</summary>
+    public static int PRound(this float value) => ProbabilisticRound(value);
   }
 }
