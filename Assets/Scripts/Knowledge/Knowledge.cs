@@ -6,5 +6,7 @@ namespace TRIdle
   public class Knowledge
   {
     public string Name { get; set; }
+
+    
   }
 }

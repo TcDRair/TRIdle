@@ -22,12 +22,12 @@ namespace TRIdle.Game
         WriteIndented = true,
         IgnoreReadOnlyProperties = true,
         ReferenceHandler = ReferenceHandler.Preserve,
+        NumberHandling = JsonNumberHandling.AllowNamedFloatingPointLiterals,
       };
 
       public static void Save()
       {
         if (!IsLoaded) return;
-
         JsonSerializer.Serialize(new FileStream(FilePath, FileMode.Create), Skill.All, JSOptions);
         State.LastSave = DateTime.Now;
       }

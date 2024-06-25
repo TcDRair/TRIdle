@@ -227,10 +227,10 @@ RectTransform:
   - {fileID: 1655629745}
   m_Father: {fileID: 1940373381}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
-  m_AnchorMin: {x: 0, y: 0}
-  m_AnchorMax: {x: 0, y: 0}
-  m_AnchoredPosition: {x: 0, y: 0}
-  m_SizeDelta: {x: 0, y: 0}
+  m_AnchorMin: {x: 0, y: 1}
+  m_AnchorMax: {x: 0, y: 1}
+  m_AnchoredPosition: {x: 150, y: -170}
+  m_SizeDelta: {x: 300, y: 910.00006}
   m_Pivot: {x: 0.5, y: 1}
 --- !u!114 &115055385
 MonoBehaviour:
@@ -353,7 +353,7 @@ MonoBehaviour:
   m_OnCullStateChanged:
     m_PersistentCalls:
       m_Calls: []
-  m_text: 'Action Description
+  m_text: '<b>Action Description</b>
 
 '
   m_isRightToLeft: 0
@@ -448,7 +448,7 @@ GameObject:
   - component: {fileID: 221475035}
   - component: {fileID: 221475038}
   m_Layer: 5
-  m_Name: Result Area
+  m_Name: Desciption Area
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -905,10 +905,10 @@ RectTransform:
   m_Children: []
   m_Father: {fileID: 1940373381}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
-  m_AnchorMin: {x: 0, y: 0}
-  m_AnchorMax: {x: 0, y: 0}
-  m_AnchoredPosition: {x: 0, y: 0}
-  m_SizeDelta: {x: 0, y: 0}
+  m_AnchorMin: {x: 0, y: 1}
+  m_AnchorMax: {x: 0, y: 1}
+  m_AnchoredPosition: {x: 150, y: -80}
+  m_SizeDelta: {x: 300, y: 160}
   m_Pivot: {x: 0.5, y: 0.5}
 --- !u!114 &521908746
 MonoBehaviour:

@@ -61,6 +61,8 @@ namespace TRIdle
         return result;
       }
     }
+    protected string MinString { get; set; } = null;
+    protected string MaxString { get; set; } = null;
 
     public RangedEValue(T @base, T min, T max) : base(@base)
     {
@@ -68,14 +70,20 @@ namespace TRIdle
       Max = max;
     }
 
-    public override string ToString() => $"{Value} ({Min} ~ {Max})";
+    public override string ToString() => $"{Value} ({MinString} ~ {MaxString})";
   }
   public class REInt : RangedEValue<int>
   {
-    public REInt(int @base, int min = 0, int max = int.MaxValue) : base(@base, min, max) { }
+    public REInt(int @base, int min = 0, int max = int.MaxValue) : base(@base, min, max) {
+      MinString = (min == 0) ? "0" : $"{min}";
+      MaxString = (max == int.MaxValue) ? "∞" : $"{max}";
+    }
   }
   public class REFloat : RangedEValue<float>
   {
-    public REFloat(float @base, float min = 0, float max = float.PositiveInfinity) : base(@base, min, max) { }
+    public REFloat(float @base, float min = 0, float max = float.PositiveInfinity) : base(@base, min, max) {
+      MinString = (min == 0) ? "0" : $"{min}";
+      MaxString = (max > float.MaxValue) ? "∞" : $"{max}";
+    }
   }
 }
