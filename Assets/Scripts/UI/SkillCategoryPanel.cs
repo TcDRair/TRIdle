@@ -16,23 +16,21 @@ namespace TRIdle.Game.Skill
         Debug.LogAssertion($"Multiple panel({nameof(SkillCategoryPanel)}) activation is invalid.");
         Destroy(this);
       } else Panel = this;
-
-      //DEBUG
-      if (Player.IsLoaded is false) Player.Serializer.Load();
-      Initialize(Player.Skill.All);
     }
 
-    //! DEBUG
-    void OnDestroy() {
-      Player.Serializer.Save();
+    void Update() {
+      if (initialized is false && Player.IsLoaded is true) Initialize(Player.Skill.All);
     }
 
+    bool initialized = false;
     public void Initialize(IEnumerable<SkillBase> skills) {// TODO : Fetch SkillCategory data
       foreach (var skill in skills) {
         var ui = Instantiate(SkillUIPanel, Content).GetComponent<SkillUI>();
         ui.Initialize(skill);
         // Need to save reference?
       }
+      
+      initialized = true;
     }
   }
 }

@@ -1,13 +1,15 @@
 using System;
 using System.Text.Json.Serialization;
-using Unity.VisualScripting;
-using UnityEditor.Experimental;
 using UnityEngine;
 
 namespace TRIdle.Game.Skill
 {
+  using Knowledge;
+
+  #region Derived Attributes
   [JsonDerivedType(typeof(SB_WoodCutting.SA_WoodCutting), typeDiscriminator: "WoodCutting")]
   [JsonDerivedType(typeof(SB_WoodCutting.SA_StickGathering), typeDiscriminator: "StickGathering")]
+  #endregion
   public abstract class ActionBase
   {
     public ActionBase()
@@ -26,15 +28,13 @@ namespace TRIdle.Game.Skill
     #endregion
 
     #region Serialized Properties (Re-assignable in Constructor)
-    [JsonInclude]
-    public float DefaultDuration { get; protected set; } = 4;
-    [JsonInclude]
-    public bool Repeatable { get; protected set; } = true;
-    [JsonInclude]
-    public bool Pausable { get; protected set; } = false;
+    [JsonInclude] public float DefaultDuration { get; protected set; } = 4;
+    [JsonInclude] public bool Repeatable { get; protected set; } = true;
+    [JsonInclude] public bool Pausable { get; protected set; } = false;
 
-    [JsonInclude]
-    public REFloat SkillProficiencyMultiplier { get; protected set; } = new(1);
+    [JsonInclude] public Keyword[] RequiredKnowledge { get; protected set; }
+
+    [JsonInclude] public REFloat SkillProficiencyMultiplier { get; protected set; } = new(1);
     #endregion
 
     #region State Properties (Override Optional)
@@ -51,8 +51,8 @@ namespace TRIdle.Game.Skill
     #region Event Callbacks 
     public ActionEvents Callbacks { get; }
 
-    protected virtual ActionCallbacks CustomCallbacks => new();
-    private ActionCallbacks DefaultCallbacks => new()
+    [JsonIgnore] protected virtual ActionCallbacks CustomCallbacks => new();
+    [JsonIgnore] private ActionCallbacks DefaultCallbacks => new()
     {
       OnStart = () => IsPerforming = true,
       OnProgress = deltaTime => CurrentProgress += deltaTime,
@@ -70,14 +70,13 @@ namespace TRIdle.Game.Skill
     #endregion
 
     #region Runtime Reference
-    [JsonIgnore]
-    public SkillBase Skill { get; private set; }
-    public void SetupReference(SkillBase skill) => Skill = skill;
+    [JsonInclude] public float CurrentProgress { get; set; }
 
-    [JsonIgnore]
-    public ActionButton Button { get; private set; }
-    public float CurrentProgress { get; set; }
-    public bool IsPerforming { get; private set; }
+
+    public void SetupReference(SkillBase skill) => Skill = skill;
+    [JsonIgnore] public SkillBase Skill { get; private set; }
+    [JsonIgnore] public ActionButton Button { get; private set; }
+    [JsonIgnore] public bool IsPerforming { get; private set; }
     #endregion
   }
 

@@ -5,10 +5,10 @@ using UnityEngine;
 using UnityEngine.UI;
 
 using TMPro;
+using System.Linq;
 
 namespace TRIdle.Game.Skill
 {
-  using UnityEditor.Experimental.GraphView;
 
   public class SkillMainPanel : MonoBehaviour
   {
@@ -35,6 +35,7 @@ namespace TRIdle.Game.Skill
       public TextMeshProUGUI Proficiency;
       public TextMeshProUGUI SkillDescription;
       public TextMeshProUGUI ActionDescription;
+      public TextMeshProUGUI ActionRequiredKeyword;
     }
     [SerializeField] Main main;
     #endregion
@@ -80,12 +81,14 @@ namespace TRIdle.Game.Skill
     void UpdateMainPanel()
     {
       if (currentSkill == null)
-        main.Proficiency.text = main.SkillDescription.text = main.ActionDescription.text = "";
+        main.Proficiency.text = main.SkillDescription.text = main.ActionDescription.text = main.ActionRequiredKeyword.text = "";
       else
       {
         main.Proficiency.text = $"Proficiency : {currentSkill.Proficiency}";
         main.SkillDescription.text = currentSkill.Description;
         main.ActionDescription.text = (current == null) ? "" : current.Description;
+        main.ActionRequiredKeyword.text = (current == null) ? ""
+          : string.Join('\n', current.RequiredKnowledge.Select(x => x.GetKnowledgeInfo().ToString()));
       }
     }
 

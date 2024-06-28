@@ -2,12 +2,12 @@ using System;
 using System.IO;
 using System.Linq;
 using System.Text.Json;
+using System.Text.Json.Serialization;
 
 using UnityEngine;
 
 namespace TRIdle.Game
 {
-  using System.Text.Json.Serialization;
   using Skill;
 
   public static class Player
@@ -17,38 +17,35 @@ namespace TRIdle.Game
     public static class Serializer
     {
       static string FilePath => Application.persistentDataPath + "/player.json";
-      static readonly JsonSerializerOptions JSOptions = new()
-      {
-        WriteIndented = true,
-        IgnoreReadOnlyProperties = true,
-        ReferenceHandler = ReferenceHandler.Preserve,
-        NumberHandling = JsonNumberHandling.AllowNamedFloatingPointLiterals,
-      };
 
-      public static void Save()
+      public static void Save(Stream stream)
       {
         if (!IsLoaded) return;
-        JsonSerializer.Serialize(new FileStream(FilePath, FileMode.Create), Skill.All, JSOptions);
+        JsonSerializer.Serialize(stream, Skill.All, Const.JsonSerializerOption);
         State.LastSave = DateTime.Now;
       }
-      public static void Load()
+      public static async void Load(Stream stream)
       {
         // Load player data
         try
         {
-          _skills = JsonSerializer.Deserialize<SkillBase[]>(
-            new FileStream(FilePath, FileMode.Open), JSOptions
-          ) ?? throw new Exception();
+          _skills = await JsonSerializer.DeserializeAsync<SkillBase[]>(stream, Const.JsonSerializerOption)
+            ?? throw new NullReferenceException("Failed to load player data.");
         }
         // If failed to load, load default data
-        catch
+        catch (Exception e)
         {
-          Debug.LogError("Failed to load player data. Loading default data.");
+          if (e is JsonException or NotSupportedException)
+            Debug.LogWarning("Failed to load player data properly. Loading default data.");
+          else if (e is NullReferenceException or ArgumentNullException)
+            Debug.LogWarning("No player data found. Loading default data.");
 
           _skills = new SkillBase[]
           {
             new SB_WoodCutting(),
           };
+
+
           foreach (var skill in _skills)
             skill.Initialize();
         }
