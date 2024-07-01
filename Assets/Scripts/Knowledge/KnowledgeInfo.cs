@@ -64,7 +64,6 @@ namespace TRIdle.Knowledge
       => GetDescription();
     }
 
-  #region Derived Definitions
   /// <summary>
   /// Contains a main keyword which enables the knowledge to be searchable / categorizable.
   /// </summary>
@@ -82,6 +81,7 @@ namespace TRIdle.Knowledge
       => $"{MainKeyword.Key} : {GetDescription()}";
   }
 
+  #region Derived Definitions
   // * Knowledge is a collection of information about the game world.
   // * All knowledge class has a prefix of "K_".
 

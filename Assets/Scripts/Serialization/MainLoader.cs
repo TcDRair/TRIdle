@@ -16,6 +16,9 @@ namespace TRIdle
   {
     protected IRepository() { }
     protected Dictionary<T, U> instRepo = new();
+    public int Count => instRepo.Count;
+    public IEnumerable<T> Keys => instRepo.Keys;
+    public IEnumerable<U> Values => instRepo.Values;
 
     public virtual U GetData(T key)
       => instRepo[key];

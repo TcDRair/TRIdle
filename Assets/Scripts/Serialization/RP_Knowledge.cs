@@ -19,6 +19,8 @@ namespace TRIdle
 
       public override void Load(Stream stream)
       {
+        base.Load(stream);
+        
         // Check 
         foreach (var key in Enum.GetValues(typeof(Keyword)).Cast<Keyword>())
           if (instRepo.TryGetValue(key, out _) is false)
