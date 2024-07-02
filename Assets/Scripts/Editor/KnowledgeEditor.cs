@@ -5,6 +5,7 @@ using System.Collections.Generic;
 
 using UnityEngine;
 using UnityEditor;
+using UnityEditorInternal;
 
 namespace TRIdle.Editor
 {
@@ -22,6 +23,7 @@ namespace TRIdle.Editor
       window.serialization.LoadData();
     }
 
+    #region Property
     private class Data
     {
       public string JsonDataPath => Application.persistentDataPath + "/knowledge.json";
@@ -157,14 +159,150 @@ namespace TRIdle.Editor
     }
     private readonly Serialization serialization = new();
 
+    private class GUIState
+    {
+      public enum Tab { Knowledge, Keywords, Settings, None }
+      public Tab tab = Tab.Settings;
+      public Vector2 kiScroll, kwScroll;
+      public Keyword kiSelected, kwSelected;
+    }
+    private readonly GUIState state = new();
+    #endregion
+
+    #region Layout Functions
+    private int indent = 0;
+    private void BeginIndent() {
+      var style = EStyle.Background(++indent);
+      style.padding = new RectOffset(8, 8, 8, 8);
+      GUILayout.BeginVertical(style);
+    }
+    private void EndIndent() {
+      GUILayout.EndVertical();
+      indent--;
+    }
+    private GUIStyle KeyStyle => new(EditorStyles.toolbarButton) {
+      alignment = TextAnchor.MiddleCenter,
+      fontStyle = FontStyle.Bold,
+      fontSize = 16,
+      fixedHeight = 32,
+    };
+    #endregion
+
     private void OnGUI()
+    {
+      BeginIndent();
+      {
+        G_TabMenu();
+        G_Main();
+      }
+      EndIndent();
+    }
+
+    void G_TabMenu()
     {
       EditorGUILayout.BeginHorizontal();
       {
+        state.tab =
+          GUILayout.Button("Knowledge", state.tab == GUIState.Tab.Knowledge ? EStyle.HeaderTabOn : EStyle.HeaderTabOff) ? GUIState.Tab.Knowledge :
+          GUILayout.Button("Keywords", state.tab == GUIState.Tab.Keywords ? EStyle.HeaderTabOn : EStyle.HeaderTabOff) ? GUIState.Tab.Keywords :
+          GUILayout.Button("Settings", state.tab == GUIState.Tab.Settings ? EStyle.HeaderTabOn : EStyle.HeaderTabOff) ? GUIState.Tab.Settings :
+          state.tab;
+      }
+      EditorGUILayout.EndHorizontal();
+    }
+
+    void G_Main()
+    {
+      BeginIndent();
+      {
+        var _ = state.tab switch
+        {
+          GUIState.Tab.Knowledge => GM_Knowledge(),
+          GUIState.Tab.Keywords => GM_Keyword(),
+          GUIState.Tab.Settings => GM_Settings(),
+          _ => G_()
+        };
+      }
+      EndIndent();
+    }
+    int GM_Knowledge()
+    {
+      if (data.KIAsset == null)
+      {
+        EditorGUILayout.LabelField(
+          "Load or Create Data to Start Editing",
+          EStyle.BoldCenterLabel
+        );
+        return 0;
+      }
+
+      EditorGUILayout.LabelField(
+        $"{data.Knowledge.Count} Knowledge Data Loaded",
+        EStyle.BoldCenterLabel
+      );
+
+      EditorGUILayout.BeginHorizontal();
+      {
+        // Knowledge Key List (Keyword)
+        state.kiScroll = GUILayout.BeginScrollView(
+          state.kiScroll, false, false, GUIStyle.none, GUI.skin.verticalScrollbar, // Scroll Bar Settings
+          GUILayout.Width(200), GUILayout.ExpandHeight(true) // Background Settings
+        );
+        BeginIndent();
+        {
+          foreach (var key in data.Knowledge.Keys)
+            if (GUILayout.Button(key.ToString(), KeyStyle))
+              state.kiSelected = key;
+        }
+        GUILayout.FlexibleSpace();
+        EndIndent();
+        GUILayout.EndScrollView();
+
+        // Knowledge Data (Selected)
+        BeginIndent();
+        {
+          // if (state.kiSelected != Keyword.None)
+          {
+            var ki = data.Knowledge.GetData(state.kiSelected);
+            EditorGUILayout.TextArea(
+              ki.GetDescription(),
+              EStyle.RichText
+            );
+          }
+        }
+        GUILayout.FlexibleSpace();
+        EndIndent();
+      }
+      EditorGUILayout.EndHorizontal();
+      return 0;
+    }
+    int GM_Keyword()
+    {
+      if (data.KwAsset == null)
+      {
+        EditorGUILayout.LabelField(
+          "Load or Create Data to Start Editing",
+          EStyle.BoldCenterLabel
+        );
+        return 0;
+      }
+
+      EditorGUILayout.LabelField(
+        $"{data.Keywords.Count} Keywords Loaded",
+        EStyle.BoldCenterLabel
+      );
+
+      GUILayout.FlexibleSpace();
+      return 0;
+    }
+    int GM_Settings()
+    {
+      EditorGUILayout.BeginHorizontal();
+      {
+        EditorGUILayout.LabelField("Files:", GUILayout.Width(40));
         GUI.enabled = false;
-        EditorGUILayout.LabelField("Data File", GUILayout.Width(60));
-        EditorGUILayout.ObjectField(GUIContent.none, data.KIAsset, typeof(TextAsset), false, GUILayout.ExpandWidth(true));
-        EditorGUILayout.ObjectField(GUIContent.none, data.KwAsset, typeof(TextAsset), false, GUILayout.ExpandWidth(true));
+        EditorGUILayout.ObjectField(GUIContent.none, data.KIAsset, typeof(TextAsset), false);
+        EditorGUILayout.ObjectField(GUIContent.none, data.KwAsset, typeof(TextAsset), false);
         GUI.enabled = true;
         if (GUILayout.Button("Load", GUILayout.Width(50))) serialization.LoadData();
         GUI.enabled = data.KIAsset != null && data.KwAsset != null;
@@ -172,8 +310,11 @@ namespace TRIdle.Editor
         GUI.enabled = true;
       }
       EditorGUILayout.EndHorizontal();
-      EditorGUILayout.Space();
-      EditorGUILayout.LabelField($"{data.Keywords.Count} Keywords / {data.Knowledge.Count} Knowledge");
+
+      GUILayout.FlexibleSpace();
+      return 0;
     }
+
+    int G_() => 0;
   }
 }
