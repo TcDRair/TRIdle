@@ -7,5 +7,11 @@
 			"path": "C:/Users/Rair/AppData/LocalLow/Rair/TRIdle"
 		}
 	],
-	"settings": {}
+  "settings": {
+    "editor.defaultFoldingRangeProvider": "ms-dotnettools.csharp",
+    "editor.defaultFormatter": "ms-dotnettools.csharp",
+    "editor.experimentalInlineEdit.backgroundColoring": false,
+    "editor.experimentalInlineEdit.enabled": false,
+    "dotnet.server.useOmnisharp": false
+  }
 }

@@ -19,6 +19,10 @@ namespace TRIdle
     public int Count => instRepo.Count;
     public IEnumerable<T> Keys => instRepo.Keys;
     public IEnumerable<U> Values => instRepo.Values;
+    public void Set(T key, U data) => instRepo[key] = data;
+    public bool Add(T key, U data) => instRepo.TryAdd(key, data);
+    public bool Replace(T key, U data) => instRepo.TryGetValue(key, out _) && Add(key, data);
+    public bool Remove(T key) => instRepo.Remove(key);
 
     public virtual U GetData(T key)
       => instRepo[key];

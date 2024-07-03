@@ -10,7 +10,7 @@ namespace TRIdle.Knowledge
 {
   public enum KeywordType
   {
-    ItemCategory, // Meta Information
+    Item, // Meta Information
     Trait, // Applied to Creature
     Effect, // Applied to Creature. Is there any better name?
     Property, // Applied to Item
@@ -43,7 +43,7 @@ namespace TRIdle.Knowledge
     // All Items have this keyword.
     // It is used as category for items.
     // Example : "Weapon", "Armor", "Consumable", etc.
-    public override KeywordType Type => KeywordType.ItemCategory;
+    public override KeywordType Type => KeywordType.Item;
   }
   public class Kw_Trait : KeywordBase
   {

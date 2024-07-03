@@ -12,7 +12,7 @@ namespace TRIdle
 
   namespace Knowledge
   {
-    public class RP_Knowledge : IRepository<Keyword, KnowledgeInfo>
+    public class RP_Knowledge : IRepository<Keyword, IKnowledgeInfo>
     {
       private RP_Knowledge() { }
       public static RP_Knowledge Instance { get; } = new();
@@ -27,11 +27,13 @@ namespace TRIdle
             Debug.LogWarning($"Keyword {key} was not loaded properly.");
 
         // DEBUG
-        instRepo[Keyword.None] = new KI_Trait(Keyword.None.GetKeywordInfo() as Kw_Trait)
+        instRepo[Keyword.None] = new KI_Trait(Keyword.None)
         {
           FlatDescription = "This is a test description. {Trait:None} is associated keyword of this.",
         };
       }
+
+      public bool TryAddKey(Keyword key) => instRepo.TryAdd(key, new KI_Item(key)); // Default Type is Item
     }
 
     public class RP_Keyword : IRepository<Keyword, KeywordBase>
@@ -61,9 +63,9 @@ namespace TRIdle
     public static bool TryGetKeywordInfo(this Keyword key, out KeywordBase keyword)
       => RP_Keyword.Instance.TryGetData(key, out keyword);
 
-    public static KnowledgeInfo GetKnowledgeInfo(this Keyword key)
+    public static IKnowledgeInfo GetKnowledgeInfo(this Keyword key)
       => RP_Knowledge.Instance.GetData(key);
-    public static bool TryGenKnowledgeInfo(this Keyword key, out KnowledgeInfo knowledge)
+    public static bool TryGenKnowledgeInfo(this Keyword key, out IKnowledgeInfo knowledge)
       => RP_Knowledge.Instance.TryGetData(key, out knowledge);
   }
 }

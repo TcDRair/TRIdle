@@ -1,7 +1,5 @@
-using System;
 using System.IO;
-using System.Text.Json;
-using System.Collections.Generic;
+using System.Linq;
 
 using UnityEngine;
 using UnityEditor;
@@ -11,7 +9,7 @@ namespace TRIdle.Editor
 {
   using Knowledge;
 
-  public class KnowledgeEditor : EditorWindow
+  public partial class KnowledgeEditor : EditorWindow
   {
     [MenuItem("Window/Knowledge Editor")]
     public static void ShowWindow()
@@ -23,6 +21,8 @@ namespace TRIdle.Editor
       window.serialization.LoadData();
     }
 
+    void OnEnable() { Initialize_KnowledgeRL(); }
+
     #region Property
     private class Data
     {
@@ -31,6 +31,8 @@ namespace TRIdle.Editor
       public TextAsset KIAsset, KwAsset;
       public RP_Keyword Keywords => RP_Keyword.Instance;
       public RP_Knowledge Knowledge => RP_Knowledge.Instance;
+
+      public ReorderableList RL_Knowledge;
 
       public enum FileExistence
       {
@@ -59,6 +61,7 @@ namespace TRIdle.Editor
         using var kwStream = new FileStream(data.JsonKeywordPath, FileMode.Open);
         data.Keywords.Load(kwStream);
         data.KwAsset = new() { name = "keywords.json" };
+        data.RL_Knowledge.list = data.Keywords.Keys.ToList();
 
         using var kiStream = new FileStream(data.JsonDataPath, FileMode.Open);
         data.Knowledge.Load(kiStream);
@@ -163,24 +166,41 @@ namespace TRIdle.Editor
     {
       public enum Tab { Knowledge, Keywords, Settings, None }
       public Tab tab = Tab.Settings;
-      public Vector2 kiScroll, kwScroll;
-      public Keyword kiSelected, kwSelected;
+      public class KnowledgeState
+      {
+        public Vector2 Scroll { get; set; }
+        public Keyword Selected { get; set; }
+
+        // Knowledge Data
+        public IKnowledgeInfo EditData { get; set; }
+        public Sprite IconRef { get; set; }
+      }
+      public KnowledgeState Knowledge { get; } = new();
     }
     private readonly GUIState state = new();
     #endregion
 
     #region Layout Functions
     private int indent = 0;
-    private void BeginIndent() {
+    private void BeginIndent(bool horizontalPadding = true, bool verticalPadding = true)
+    {
       var style = EStyle.Background(++indent);
-      style.padding = new RectOffset(8, 8, 8, 8);
+      style.padding = (horizontalPadding, verticalPadding) switch
+      {
+        (true, true) => new(8, 8, 8, 8),
+        (true, false) => new(8, 8, 0, 0),
+        (false, true) => new(0, 0, 8, 8),
+        _ => new(0, 0, 0, 0)
+      };
       GUILayout.BeginVertical(style);
     }
-    private void EndIndent() {
+    private void EndIndent()
+    {
       GUILayout.EndVertical();
       indent--;
     }
-    private GUIStyle KeyStyle => new(EditorStyles.toolbarButton) {
+    private GUIStyle KeyStyle => new("RL Element")
+    {
       alignment = TextAnchor.MiddleCenter,
       fontStyle = FontStyle.Bold,
       fontSize = 16,
@@ -198,6 +218,7 @@ namespace TRIdle.Editor
       EndIndent();
     }
 
+    #region Main Layout
     void G_TabMenu()
     {
       EditorGUILayout.BeginHorizontal();
@@ -210,7 +231,6 @@ namespace TRIdle.Editor
       }
       EditorGUILayout.EndHorizontal();
     }
-
     void G_Main()
     {
       BeginIndent();
@@ -225,57 +245,8 @@ namespace TRIdle.Editor
       }
       EndIndent();
     }
-    int GM_Knowledge()
-    {
-      if (data.KIAsset == null)
-      {
-        EditorGUILayout.LabelField(
-          "Load or Create Data to Start Editing",
-          EStyle.BoldCenterLabel
-        );
-        return 0;
-      }
+    #endregion
 
-      EditorGUILayout.LabelField(
-        $"{data.Knowledge.Count} Knowledge Data Loaded",
-        EStyle.BoldCenterLabel
-      );
-
-      EditorGUILayout.BeginHorizontal();
-      {
-        // Knowledge Key List (Keyword)
-        state.kiScroll = GUILayout.BeginScrollView(
-          state.kiScroll, false, false, GUIStyle.none, GUI.skin.verticalScrollbar, // Scroll Bar Settings
-          GUILayout.Width(200), GUILayout.ExpandHeight(true) // Background Settings
-        );
-        BeginIndent();
-        {
-          foreach (var key in data.Knowledge.Keys)
-            if (GUILayout.Button(key.ToString(), KeyStyle))
-              state.kiSelected = key;
-        }
-        GUILayout.FlexibleSpace();
-        EndIndent();
-        GUILayout.EndScrollView();
-
-        // Knowledge Data (Selected)
-        BeginIndent();
-        {
-          // if (state.kiSelected != Keyword.None)
-          {
-            var ki = data.Knowledge.GetData(state.kiSelected);
-            EditorGUILayout.TextArea(
-              ki.GetDescription(),
-              EStyle.RichText
-            );
-          }
-        }
-        GUILayout.FlexibleSpace();
-        EndIndent();
-      }
-      EditorGUILayout.EndHorizontal();
-      return 0;
-    }
     int GM_Keyword()
     {
       if (data.KwAsset == null)
@@ -295,6 +266,7 @@ namespace TRIdle.Editor
       GUILayout.FlexibleSpace();
       return 0;
     }
+    
     int GM_Settings()
     {
       EditorGUILayout.BeginHorizontal();
