@@ -1,0 +1,32 @@
+{
+  "FormattingOptions": {
+    "EnableEditorConfigSupport": true,
+    "OrganizeImports": true,
+
+    
+    "SpacingAfterMethodDeclarationName": false,
+    "SpaceWithinMethodDeclarationParenthesis": false,
+    "SpaceBetweenEmptyMethodDeclarationParentheses": false,
+    "SpaceAfterMethodCallName": false,
+    "SpaceWithinMethodCallParentheses": false,
+    "SpaceBetweenEmptyMethodCallParentheses": false,
+    "SpaceAfterControlFlowStatementKeyword": true,
+    "SpaceWithinExpressionParentheses": false,
+    "SpaceWithinCastParentheses": false,
+    "SpaceWithinOtherParentheses": false,
+    "SpaceAfterCast": false,
+    "SpacesIgnoreAroundVariableDeclaration": false,
+    "SpaceBeforeOpenSquareBracket": true,
+    "SpaceBetweenEmptySquareBrackets": false,
+    "SpaceWithinSquareBrackets": false,
+    "SpaceAfterKeywordsInControlFlowStatements": true,
+    "SpaceWithinMethodDeclarationParameterListParentheses": false,
+    "SpaceWithinMethodCallParameterListParentheses": false,
+    "SpaceAfterComma": true,
+    "SpaceBeforeComma": false,
+    "SpaceAfterDot": false,
+    "SpaceBeforeDot": false,
+    "SpaceAfterSemicolonsInForStatement": true,
+    "SpaceBeforeSemicolonsInForStatement": false
+  }
+}

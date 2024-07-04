@@ -7,18 +7,15 @@ using UnityEngine.UI;
 using TMPro;
 using System.Linq;
 
-namespace TRIdle.Game.Skill
-{
+namespace TRIdle.Game.Skill {
 
-  public class SkillMainPanel : MonoBehaviour
-  {
+  public class SkillMainPanel : MonoBehaviour {
     public static SkillMainPanel Panel { get; private set; }
 
 
     #region Inspector
     [Serializable]
-    class Title
-    {
+    class Title {
       public TextMeshProUGUI Label;
       public Image Icon;
       public Button DetailButton;
@@ -28,8 +25,7 @@ namespace TRIdle.Game.Skill
     [SerializeField] Title title;
 
     [Serializable]
-    class Main
-    {
+    class Main {
       public RectTransform ButtonPanel;
       public GameObject ActionButton;
       public TextMeshProUGUI Proficiency;
@@ -43,47 +39,39 @@ namespace TRIdle.Game.Skill
     private SkillBase currentSkill;
     private ActionBase current;
 
-    void Awake()
-    {
-      if (Panel != null)
-      {
+    void Awake() {
+      if (Panel != null) {
         Debug.LogAssertion($"Multiple panel({nameof(SkillMainPanel)}) activation is invalid.");
         Destroy(this);
       }
       else Panel = this;
     }
 
-    void Update()
-    {
+    void Update() {
       UpdateMainPanel();
     }
 
-    public void ToggleDetailButton()
-    {
+    public void ToggleDetailButton() {
       // TODO : Toggle Canvas Group of Detail Panel
     }
 
-    public void DrawSkill(SkillBase skill)
-    {
+    public void DrawSkill(SkillBase skill) {
       if (skill == currentSkill) return;
       currentSkill = skill;
       title.Label.text = skill.Name;
       title.Icon.sprite = skill.Icon;
 
       main.ButtonPanel.DestroyAllChildren();
-      foreach (var a in skill.Actions)
-      {
+      foreach (var a in skill.Actions) {
         a.Callbacks.OnStart += () => ChangeCurrentAction(a);
         var b = Instantiate(main.ActionButton, main.ButtonPanel).GetComponent<ActionButton>();
         b.Action = a;
       }
     }
-    void UpdateMainPanel()
-    {
+    void UpdateMainPanel() {
       if (currentSkill == null)
         main.Proficiency.text = main.SkillDescription.text = main.ActionDescription.text = main.ActionRequiredKeyword.text = "";
-      else
-      {
+      else {
         main.Proficiency.text = $"Proficiency : {currentSkill.Proficiency}";
         main.SkillDescription.text = currentSkill.Description;
         main.ActionDescription.text = (current == null) ? "" : current.Description;
@@ -92,8 +80,7 @@ namespace TRIdle.Game.Skill
       }
     }
 
-    void ChangeCurrentAction(ActionBase action)
-    {
+    void ChangeCurrentAction(ActionBase action) {
       if (action == current) return;
       current?.Callbacks.End();
       current = action;

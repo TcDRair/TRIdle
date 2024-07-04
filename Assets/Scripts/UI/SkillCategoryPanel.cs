@@ -3,10 +3,8 @@ using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.UI;
 
-namespace TRIdle.Game.Skill
-{
-  public class SkillCategoryPanel : MonoBehaviour
-  {
+namespace TRIdle.Game.Skill {
+  public class SkillCategoryPanel : MonoBehaviour {
     public static SkillCategoryPanel Panel { get; private set; }
     [SerializeField] RectTransform Content;
     [SerializeField] GameObject SkillUIPanel;
@@ -15,7 +13,8 @@ namespace TRIdle.Game.Skill
       if (Panel != null) {
         Debug.LogAssertion($"Multiple panel({nameof(SkillCategoryPanel)}) activation is invalid.");
         Destroy(this);
-      } else Panel = this;
+      }
+      else Panel = this;
     }
 
     void Update() {
@@ -29,7 +28,7 @@ namespace TRIdle.Game.Skill
         ui.Initialize(skill);
         // Need to save reference?
       }
-      
+
       initialized = true;
     }
   }

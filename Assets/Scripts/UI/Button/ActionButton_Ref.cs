@@ -1,15 +1,13 @@
 using System;
 using UnityEngine;
 
-namespace TRIdle.Game
-{
+namespace TRIdle.Game {
   using Skill;
-  
+
   [CreateAssetMenu(fileName = "ProgressButton_Ref", menuName = "TRIdle/ProgressButton References", order = 0)]
-  public class ActionButton_Ref : ScriptableObject
-  {
-    [Serializable] public class Icon
-    {
+  public class ActionButton_Ref : ScriptableObject {
+    [Serializable]
+    public class Icon {
       public Sprite ActionCompleted, ActionInturrupted, ActionAwaiting;
     }
     public Icon icon;

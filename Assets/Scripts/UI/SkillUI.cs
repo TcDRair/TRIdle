@@ -4,13 +4,10 @@ using UnityEngine.UI;
 using TMPro;
 using System;
 
-namespace TRIdle.Game.Skill
-{
-  public class SkillUI : MonoBehaviour
-  {
+namespace TRIdle.Game.Skill {
+  public class SkillUI : MonoBehaviour {
     [Serializable]
-    class CategoryPanel
-    {
+    class CategoryPanel {
       public TextMeshProUGUI Name, Level;
       public Image Icon;
       public Button Button;
@@ -18,8 +15,7 @@ namespace TRIdle.Game.Skill
     [SerializeField] private CategoryPanel Category;
 
     [Serializable]
-    class MainPanel
-    {
+    class MainPanel {
       public GameObject RButton;
       public RectTransform RButtonPanel;
     }

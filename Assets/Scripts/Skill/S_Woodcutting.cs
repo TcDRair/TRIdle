@@ -1,13 +1,11 @@
 using System.Linq;
 using System.Text.Json.Serialization;
 
-namespace TRIdle.Game.Skill
-{
+namespace TRIdle.Game.Skill {
   using Knowledge;
 
   //! Sample Skill
-  public class SB_WoodCutting : SkillBase
-  {
+  public class SB_WoodCutting : SkillBase {
     public override string Name => "벌목";
     public override string Description =>
       $"나무를 베어서 재료를 얻는 스킬\n" +
@@ -20,8 +18,7 @@ namespace TRIdle.Game.Skill
         $"정령 호의 : {Stats.SpiritFavor}"
       ));
     protected override string IconPath => "Sprite/WoodCutting";
-    public override void Initialize()
-    {
+    public override void Initialize() {
       Level = 0;
       MaxLevel = 10;
 
@@ -31,8 +28,7 @@ namespace TRIdle.Game.Skill
       };
     }
 
-    public record Stat : StatBase
-    {
+    public record Stat : StatBase {
       public REInt WoodRegenMax { get; set; } = new(100);
       public REFloat WoodRegenRate { get; set; } = new(0.1f);
 
@@ -44,8 +40,7 @@ namespace TRIdle.Game.Skill
     }
     public Stat Stats { get; protected set; } = new();
 
-    public class SA_WoodCutting : ActionBase
-    {
+    public class SA_WoodCutting : ActionBase {
       #region Overrides
       public override string Name => "벌목";
       public override string Description =>
@@ -58,8 +53,7 @@ namespace TRIdle.Game.Skill
 
       #endregion
 
-      public SA_WoodCutting()
-      {
+      public SA_WoodCutting() {
         DefaultDuration = 5;
         SkillProficiencyMultiplier.Base = 1;
         Repeatable = true;
@@ -72,11 +66,9 @@ namespace TRIdle.Game.Skill
       private float m_explorationDuration;
       public override float Duration => m_explorationDuration + DefaultDuration;
 
-      protected override ActionCallbacks CustomCallbacks => new()
-      {
+      protected override ActionCallbacks CustomCallbacks => new() {
         OnRepeat = SetExplorationDuration, // Only Completing the action will reset the exploration duration
-        OnPerform = () =>
-        {
+        OnPerform = () => {
           if (Skill.GetAction<SA_StickGathering>(out var action))
             action.Amount += Modifiers.StickGatheringAmount.Value.PRound();
         },
@@ -88,8 +80,7 @@ namespace TRIdle.Game.Skill
         );
       }
 
-      public record Modifier : ModifierBase
-      {
+      public record Modifier : ModifierBase {
         public REFloat ExplorationMaxDuration { get; set; } = new(10);
         public REFloat ExplorationMinDuration { get; set; } = new(1);
         public REFloat StickGatheringAmount { get; set; } = new(2);
@@ -98,8 +89,7 @@ namespace TRIdle.Game.Skill
       public Modifier Modifiers { get; protected set; } = new();
     }
 
-    public class SA_StickGathering : ActionBase
-    {
+    public class SA_StickGathering : ActionBase {
       #region Overrides
       public override string Name => "잔가지 회수";
       public override string Description =>
@@ -114,14 +104,12 @@ namespace TRIdle.Game.Skill
 
       [JsonInclude]
       public int Amount { get; set; } = 0;
-      public SA_StickGathering()
-      {
+      public SA_StickGathering() {
         DefaultDuration = 2.5f;
         SkillProficiencyMultiplier.Base = 0.1f;
         Repeatable = true;
       }
-      protected override ActionCallbacks CustomCallbacks => new()
-      {
+      protected override ActionCallbacks CustomCallbacks => new() {
         OnPerform = () => Amount--
       };
     }

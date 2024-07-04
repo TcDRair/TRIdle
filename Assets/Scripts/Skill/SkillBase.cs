@@ -6,11 +6,9 @@ using System.Collections.Generic;
 
 using UnityEngine;
 
-namespace TRIdle.Game.Skill
-{
+namespace TRIdle.Game.Skill {
   [JsonDerivedType(typeof(SB_WoodCutting), typeDiscriminator: "WoodCutting")]
-  public abstract class SkillBase
-  {
+  public abstract class SkillBase {
     #region Fixed Properties (Override Required)
     [JsonIgnore]
     public virtual string Name => Const.PLACEHOLDER;
@@ -40,8 +38,7 @@ namespace TRIdle.Game.Skill
     [JsonIgnore]
     public virtual ProgressType Progress =>
       Player.State.FocusSkill == this ? ProgressType.Focused : ProgressType.None;
-    public enum ProgressType
-    {
+    public enum ProgressType {
       /// <summary>Idle. Default state.</summary>
       None,
       /// <summary>Indicates the main panel is focusing this skill. Has lower priority than Tasks.</summary>
@@ -53,7 +50,7 @@ namespace TRIdle.Game.Skill
       /// <summary>Task is interrupted by non-player action. Otherwise, use <see cref="Focused"/>.</summary>
       TaskInterrupted
     }
-    
+
     /// <summary>
     /// Derive this to provide additional information for the skill.<br/>
     /// Strongly recommended to name the derived record as <see langword="Stat"/>.
@@ -62,7 +59,7 @@ namespace TRIdle.Game.Skill
     #endregion
 
     #region Runtime Properties (+ Related Methods)
-    
+
     #region Initialization
     /// <summary>
     /// Initialize the skill. Called when the skill is first created.<br/>
@@ -73,8 +70,7 @@ namespace TRIdle.Game.Skill
     /// Setup references for the skill. Called after all skills are loaded from the file.<br/>
     /// Override this to setup custom references, except for actions.
     /// </summary>
-    public virtual void SetupReference()
-    {
+    public virtual void SetupReference() {
       foreach (var action in Actions)
         action.SetupReference(this);
     }
@@ -84,11 +80,9 @@ namespace TRIdle.Game.Skill
     [JsonIgnore]
     private ActionBase _defaultAction;
     [JsonIgnore]
-    public ActionBase DefaultAction
-    {
+    public ActionBase DefaultAction {
       get => _defaultAction;
-      set
-      {
+      set {
         if (CanBeDefaultAction(value))
           _defaultAction = value;
       }
@@ -113,8 +107,7 @@ namespace TRIdle.Game.Skill
     /// <typeparam name="T">Type of the action to find.</typeparam>
     /// <param name="action">First action that matches the type.</param>
     /// <returns>True if found, false otherwise.</returns>
-    public bool GetAction<T>(out T action) where T : ActionBase
-    {
+    public bool GetAction<T>(out T action) where T : ActionBase {
       action = GetAction<T>();
       return action != null;
     }

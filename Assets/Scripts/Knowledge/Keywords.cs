@@ -1,7 +1,5 @@
-namespace TRIdle.Knowledge
-{
-  public enum Keyword
-  {
+namespace TRIdle.Knowledge {
+  public enum Keyword {
     None,
 
 

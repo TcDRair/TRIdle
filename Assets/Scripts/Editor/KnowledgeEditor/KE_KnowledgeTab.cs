@@ -1,66 +1,107 @@
 using System;
 using System.Linq;
+using System.Collections.Generic;
 
 using UnityEngine;
 using UnityEditor;
 using UnityEditorInternal;
 
-namespace TRIdle.Editor
-{
-  using System.Collections.Generic;
+namespace TRIdle.Editor {
   using Knowledge;
 
-  public partial class KnowledgeEditor
-  {
+  public class KE_KnowledgeTab : ITabLayout {
     const string KIAssetPath = "Assets/Resources/Sprite/Knowledge/";
+    public RP_Knowledge Data => RP_Knowledge.Instance;
 
+    public class StateProperties {
+      public ReorderableList DisplayList;
+      public TextAsset DisplayAsset { get; set; }
 
-    void Initialize_KnowledgeRL()
-    {
-      data.RL_Knowledge = new(data.Knowledge.Keys.ToList(), typeof(Keyword), true, true, true, true)
-      {
-        drawHeaderCallback = rect =>
-        {
-          int count = data.Knowledge.Count;
+      // Key Menu State
+      public Keyword KeywordMenu { get; set; }
+      public Vector2 KeyMenuScroll { get; set; }
+
+      // Knowledge Data
+      public IKnowledgeInfo EditData { get; set; }
+      public Keyword KeywordPopup { get; set; }
+
+      // GUI Layout Data (temporary)
+      public bool IconLoaded { get; set; }
+      public Sprite SelectedIcon { get; set; }
+
+      public void UpdateIndex(int index) {
+        if (index < 0) { KeywordMenu = default; EditData = default; return; }
+        KeywordMenu = (Keyword)DisplayList.list[index];
+        EditData = RP_Knowledge.Instance.GetData(KeywordMenu);
+
+        IconLoaded = false;
+        SelectedIcon = null;
+      }
+    }
+    public StateProperties State { get; set; } = new();
+
+    #region Init / Update
+    public void Initialize() {
+      State.DisplayAsset = new() { name = "knowledge.json" };
+
+      State.DisplayList = new(Data.Keys.ToList(), typeof(Keyword), true, true, true, true) {
+        drawHeaderCallback = rect => {
+          int count = Data.Count;
           EditorGUI.LabelField(rect, $"{count} Keyword{(count > 1 ? "s" : string.Empty)}");
         },
-        drawElementCallback = (rect, index, active, focused) =>
-        {
-          var key = (Keyword)data.RL_Knowledge.list[index];
+        drawElementCallback = (rect, index, active, focused) => {
+          var key = (Keyword)State.DisplayList.list[index];
           EditorGUI.LabelField(rect, key.ToString());
         },
-        onAddCallback = list =>
-        {
-          data.Knowledge.TryAddKey(Keyword.None);
-          list.list = data.Knowledge.Keys.ToList();
-          list.index = list.list.Count - 1;
-
-          SetKnowledgeRLIndex(list);
+        onAddCallback = list => {
+          Data.TryAddDefault();
+          list.list = Data.Keys.ToList();
+          if (list.index < 0) State.UpdateIndex(list.index = 0);
         },
-        onCanAddCallback = list => data.Knowledge.TryGetData(Keyword.None, out _) is false,
-        onRemoveCallback = list =>
-        {
-          data.Knowledge.Remove((Keyword)list.list[list.index]);
-          list.list = data.Knowledge.Keys.ToList();
-          list.index = Math.Min(list.index, list.list.Count - 1);
-
-          SetKnowledgeRLIndex(list);
+        onCanAddCallback = list => Data.TryGetData(Keyword.None, out _) is false,
+        onRemoveCallback = list => {
+          Data.Remove((Keyword)list.list[list.index]);
+          list.list.RemoveAt(list.index);
+          State.UpdateIndex(--list.index);
         },
-        onSelectCallback = SetKnowledgeRLIndex
+        onSelectCallback = list => State.UpdateIndex(list.index),
       };
     }
+    public void UpdateDisplayList() => UpdateDisplayList(State.DisplayList);
+    public void UpdateDisplayList(ReorderableList list) {
+      // Update the list
+      list.list = Data.Keys.ToList();
 
-    void SetKnowledgeRLIndex(ReorderableList list)
-    {
-      state.Knowledge.Selected = (Keyword)list.list[list.index];
-      state.Knowledge.EditData = data.Knowledge.GetData(state.Knowledge.Selected);
+      // Get the current index keyword
+      list.index = Math.Min(list.index, list.count - 1);
+      var displayedKeyword = (Keyword)list.list[list.index];
+
+      // If target keyword is different
+      if (State.KeywordMenu != displayedKeyword) {
+        // 1. If the keyword is moved to the new index, update the index
+        if (Data.TryGetData(displayedKeyword, out _))
+          list.index = list.list.IndexOf(displayedKeyword);
+        // 2. If the keyword does not exist in the data, get the closest one instead.
+        else {
+          State.KeywordMenu = displayedKeyword;
+
+          // Refresh state. Layout will be updated in the next frame.
+          State.IconLoaded = false;
+          State.SelectedIcon = null;
+
+          State.EditData = Data.GetData(State.KeywordMenu);
+          return;
+        }
+      }
+      // Update the data only if the keyword not has been set
+      State.EditData ??= Data.GetData(State.KeywordMenu);
     }
+    #endregion
 
-    int GM_Knowledge()
-    {
+    #region Layout
+    public int DoLayout() {
       // Data Check
-      if (data.KIAsset == null)
-      {
+      if (State.DisplayAsset == null) {
         EditorGUILayout.LabelField(
           "Load or Create Data to Start Editing",
           EStyle.BoldCenterLabel
@@ -72,79 +113,89 @@ namespace TRIdle.Editor
       EditorGUILayout.BeginHorizontal();
       {
         #region List Area
-        BeginIndent();
+        ELayout.BeginIndent();
         {
-          data.RL_Knowledge.DoLayoutList();
+          State.DisplayList.DoLayoutList();
           EditorGUILayout.LabelField(GUIContent.none, GUILayout.Width(200));
-          EStyle.FlexibleHeight();
+          ELayout.FlexibleHeight();
         }
-        EndIndent();
+        ELayout.EndIndent();
         #endregion
 
         #region Edit Area
-        BeginIndent();
-        if (state.Knowledge.EditData != null)
-        {
-          KnowledgeEditMenu();
+        ELayout.BeginIndent();
+        if (State.EditData != null) {
+          EditLayout();
           GUILayout.FlexibleSpace();
-          KnowledgeButtonMenu();
+          ButtonLayout();
         }
-        else
-        {
+        else {
           EditorGUILayout.LabelField("Select a Keyword to Edit", EStyle.BoldCenterLabel);
           // Layout margins (Don't know why it works)
           GUILayout.BeginHorizontal();
           GUILayout.FlexibleSpace();
           GUILayout.EndHorizontal();
 
-          EStyle.FlexibleHeight();
+          ELayout.FlexibleHeight();
         }
-        EndIndent();
+        ELayout.EndIndent();
         #endregion
       }
       EditorGUILayout.EndHorizontal();
       return 0;
     }
 
-    void KnowledgeEditMenu()
-    {
-      var edit = state.Knowledge.EditData;
+    void EditLayout() {
+      var edit = State.EditData;
 
       // Keyword
-      edit.Keyword = (Keyword)EditorGUILayout.EnumPopup("Keyword", edit.Keyword);
+      SelectKeyLayout();
 
       // Type
       var type = (KeywordType)EditorGUILayout.EnumPopup("Type", edit.Type);
       if (type != edit.Type)
-        if (EditorUtility.DisplayDialog("Type Change", "Changing the type will discard specific data. Are you sure?", "Yes", "No"))
-          edit = state.Knowledge.EditData = edit.Convert(type);
+        if (EditorUtility.DisplayDialog("Type Change", "Type change will discard specific Main.data. Are you sure?", "Yes", "No"))
+          edit = State.EditData = edit.Convert(type);
+
+      EditorGUILayout.Space();
 
       // Description
-      edit.FlatDescription = EditorGUILayout.TextArea(edit.FlatDescription);
+      GUILayout.BeginHorizontal();
+      {
+        EditorGUILayout.LabelField("Description");
+        edit.FlatDescription = GUILayout.TextArea(edit.FlatDescription, GUILayout.ExpandWidth(true));
+      }
+      GUILayout.EndHorizontal();
 
       // Icon
-      // TODO : Resource Load IconReference
-      var assetPath = $"Assets/Resources/{edit.ImagePath}";
-      if (state.Knowledge.IconRef == null) state.Knowledge.IconRef = AssetDatabase.LoadAssetAtPath<Sprite>(assetPath);
-      state.Knowledge.IconRef = EditorGUILayout.ObjectField("Icon", state.Knowledge.IconRef, typeof(Sprite), false, GUILayout.ExpandWidth(true)) as Sprite;
-      var path = AssetDatabase.GetAssetPath(state.Knowledge.IconRef);
-      if (path?.Length > 0)
-      {
-        var newPath = $"{KIAssetPath}{edit.Keyword}.png";
-        // remove "Assets/Resources/" 
-        edit.ImagePath = newPath[17..];
-        if (path != newPath && AssetDatabase.CopyAsset(path, newPath)) {
-          if (path.StartsWith(KIAssetPath)) AssetDatabase.DeleteAsset(path);
-          AssetDatabase.Refresh();
-          state.Knowledge.IconRef = AssetDatabase.LoadAssetAtPath<Sprite>(newPath);
+
+      // Try to load the icon from the saved path once only
+      if (State.IconLoaded is false) {
+        var savedPath = $"Assets/Resources/{edit.IconPath}";
+        if (AssetDatabase.LoadAssetAtPath<Sprite>(savedPath) is Sprite savedSprite) {
+          State.SelectedIcon = savedSprite;
         }
-        else Debug.LogWarning($"Failed to copy the icon({path}) to {newPath}");
+        State.IconLoaded = true;
       }
-      else edit.ImagePath = "";
+
+      State.SelectedIcon = EditorGUILayout.ObjectField("Icon", State.SelectedIcon, typeof(Sprite), false) as Sprite;
+      var selectedIconPath = AssetDatabase.GetAssetPath(State.SelectedIcon);
+
+      // Check if the icon is changed
+      if (selectedIconPath?.Length > 0) {
+        var newPath = $"{KIAssetPath}{edit.Keyword}.png";
+        edit.IconPath = newPath[17..]; // Remove "Assets/Resources/" from the path (AssetPath => ResourcePath)
+                                       // Try to copy the icon to the new path
+        if (selectedIconPath != newPath && AssetDatabase.CopyAsset(selectedIconPath, newPath)) {
+          if (selectedIconPath.StartsWith(KIAssetPath)) AssetDatabase.DeleteAsset(selectedIconPath);
+          AssetDatabase.Refresh();
+          State.SelectedIcon = AssetDatabase.LoadAssetAtPath<Sprite>(newPath);
+        }
+      }
+      else edit.IconPath = "";
 
       // Specific Data
-      switch (edit.Type)
-      {
+      switch (edit.Type) {
         case KeywordType.Trait:
           var trait = edit as KI_Trait;
           break;
@@ -154,30 +205,47 @@ namespace TRIdle.Editor
       }
     }
 
-    void KnowledgeButtonMenu()
-    {
+    void SelectKeyLayout() {
+      var edit = State.EditData;
+
+      var validKeys = GetAvailableKeywords(State.KeywordMenu).ToArray();
+      edit.Keyword = ELayout.Popup("Keyword", edit.Keyword, validKeys);
+    }
+
+    void ButtonLayout() {
       GUILayout.BeginHorizontal();
       {
         GUILayout.FlexibleSpace();
-        GUI.enabled = state.Knowledge.EditData != null;
+        GUI.enabled = !(Data.TryGetData(State.EditData.Keyword, out var prevData) && State.EditData.Same(prevData));
         bool trySave = GUILayout.Button("Save", GUILayout.Width(50));
         GUI.enabled = true;
-        if (trySave && EditorUtility.DisplayDialog("Save Changes", "Are you sure to save the changes?", "Yes", "No"))
-        {
-          if (state.Knowledge.Selected != state.Knowledge.EditData.Keyword)
-          {
-            data.Knowledge.Set(state.Knowledge.EditData.Keyword, state.Knowledge.EditData);
-            data.Knowledge.Remove(state.Knowledge.Selected);
-            state.Knowledge.Selected = state.Knowledge.EditData.Keyword;
-            data.RL_Knowledge.list = data.Knowledge.Keys.ToList();
+        if (trySave && EditorUtility.DisplayDialog("Save Changes", "Are you sure to save the changes?", "Yes", "No")) {
+          if (State.KeywordMenu != State.EditData.Keyword && Data.Add(State.EditData.Keyword, State.EditData)) {
+            Debug.Log("Keyword Changed");
+            Data.Remove(State.KeywordMenu);
+            State.KeywordMenu = State.EditData.Keyword;
           }
-          else data.Knowledge.Replace(state.Knowledge.Selected, state.Knowledge.EditData);
-          SetKnowledgeRLIndex(data.RL_Knowledge);
+          else Data.Replace(State.KeywordMenu, State.EditData);
+
+          UpdateDisplayList();
         }
-        if (GUILayout.Button("Cancel", GUILayout.Width(50))) state.Knowledge.EditData = data.Knowledge.GetData(state.Knowledge.Selected);
+        if (GUILayout.Button("Cancel", GUILayout.Width(50))) State.EditData = Data.GetData(State.KeywordMenu);
       }
       GUILayout.EndHorizontal();
     }
 
+    #endregion
+
+    #region Misc
+    /// <summary>
+    /// Get Available Keywords that are not used in the data.<br/>
+    /// Excludes <see cref="Keyword.None"/>  but include current selected keyword.
+    /// (So if current is <see cref="Keyword.None"/> , it will be included)
+    /// </summary>
+    IEnumerable<Keyword> GetAvailableKeywords(Keyword current = Keyword.None)
+      => from Keyword key in Enum.GetValues(typeof(Keyword))
+         where key == current || (key > 0 && Data.TryGetData(key, out _) is false)
+         select key;
+    #endregion
   }
 }

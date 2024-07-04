@@ -1,9 +1,7 @@
 using UnityEngine;
 
-namespace TRIdle.Game
-{
-  public class ResponsiveCanvas : MonoBehaviour
-  {
+namespace TRIdle.Game {
+  public class ResponsiveCanvas : MonoBehaviour {
     public Canvas Canvas;
     public GameObject WideMenu, NarrowMenu, MenuButton;
 

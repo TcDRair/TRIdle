@@ -3,14 +3,11 @@ using System.Text.Json;
 using System.Text.Json.Serialization;
 using UnityEditor;
 
-namespace TRIdle
-{
-  public class Const
-  {
+namespace TRIdle {
+  public class Const {
     public const string PLACEHOLDER = "PlaceHolder";
-    public const string SPRITE_PLACEHOLDER_PATH = "Sprites/PlaceHolder";
-    public static readonly JsonSerializerOptions JsonSerializerOption = new()
-    {
+    public const string SPRITE_PLACEHOLDER_PATH = "Sprite/PlaceHolder";
+    public static readonly JsonSerializerOptions JsonSerializerOption = new() {
       WriteIndented = true,
       IgnoreReadOnlyProperties = true,
       ReferenceHandler = ReferenceHandler.IgnoreCycles,
@@ -19,13 +16,10 @@ namespace TRIdle
   }
 
 
-  public static partial class Extensions
-  {
+  public static partial class Extensions {
     public static void DestroyAllChildren(this GameObject obj) => DestroyAllChildren(obj.transform);
-    public static void DestroyAllChildren(this Transform tr)
-    {
-      for (int i = tr.childCount - 1; i >= 0; i--)
-      {
+    public static void DestroyAllChildren(this Transform tr) {
+      for (int i = tr.childCount - 1; i >= 0; i--) {
         Object.Destroy(tr.GetChild(i).gameObject);
       }
     }

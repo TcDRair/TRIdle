@@ -5,280 +5,116 @@ using UnityEngine;
 using UnityEditor;
 using UnityEditorInternal;
 
-namespace TRIdle.Editor
-{
+namespace TRIdle.Editor {
   using Knowledge;
 
-  public partial class KnowledgeEditor : EditorWindow
-  {
+  public class KnowledgeEditor : EditorWindow {
+    #region Initialization
+    public static KnowledgeEditor Instance { get; private set; }
+
     [MenuItem("Window/Knowledge Editor")]
-    public static void ShowWindow()
-    {
+    public static void ShowWindow() {
       var window = GetWindow<KnowledgeEditor>("Knowledge Editor");
       window.minSize = new Vector2(600, 360);
       window.Show();
-
-      window.serialization.LoadData();
     }
 
-    void OnEnable() { Initialize_KnowledgeRL(); }
+    void InitializeTab() {
+      KnowledgeTab.Initialize();
+      KeywordTab.Initialize();
+      SettingTab.Initialize();
+    }
+
+    void OnEnable() {
+      Instance = this;
+    }
+    #endregion
 
     #region Property
-    private class Data
-    {
-      public string JsonDataPath => Application.persistentDataPath + "/knowledge.json";
-      public string JsonKeywordPath => Application.persistentDataPath + "/keywords.json";
-      public TextAsset KIAsset, KwAsset;
-      public RP_Keyword Keywords => RP_Keyword.Instance;
-      public RP_Knowledge Knowledge => RP_Knowledge.Instance;
+    public KE_KnowledgeTab KnowledgeTab { get; } = new();
+    public KE_KeywordTab KeywordTab { get; } = new();
+    public KE_SettingTab SettingTab { get; } = new();
 
-      public ReorderableList RL_Knowledge;
+    public string JsonKeywordPath => Application.persistentDataPath + "/keywords.json";
+    public string JsonDataPath => Application.persistentDataPath + "/knowledge.json";
 
-      public enum FileExistence
-      {
-        None,
-        Main,
-        Keyword,
-        Both
+    private class SerializationProperties {
+      public void LoadData() {
+        using var keywordStream = new FileStream(Instance.JsonKeywordPath, FileMode.Open);
+        RP_Keyword.Instance.Load(keywordStream);
+
+        using var knowledgeStream = new FileStream(Instance.JsonDataPath, FileMode.Open);
+        RP_Knowledge.Instance.Load(knowledgeStream);
+
+        Instance.InitializeTab();
       }
-      public FileExistence CheckFileExistence()
-      {
-        return (File.Exists(JsonDataPath), File.Exists(JsonKeywordPath)) switch
-        {
-          (true, true) => FileExistence.Both,
-          (true, false) => FileExistence.Main,
-          (false, true) => FileExistence.Keyword,
-          _ => FileExistence.None
-        };
-      }
-    }
-    private static readonly Data data = new();
 
-    private class Serialization
-    {
-      public void LoadData()
-      {
-        using var kwStream = new FileStream(data.JsonKeywordPath, FileMode.Open);
-        data.Keywords.Load(kwStream);
-        data.KwAsset = new() { name = "keywords.json" };
-        data.RL_Knowledge.list = data.Keywords.Keys.ToList();
+      public void SaveData() {
+        if (EditorUtility.DisplayDialog("Save Data", "Are you sure to save the data?", "Yes", "No")) {
+          using var kwStream = new FileStream(Instance.JsonKeywordPath, FileMode.Create);
+          RP_Keyword.Instance.Save(kwStream);
 
-        using var kiStream = new FileStream(data.JsonDataPath, FileMode.Open);
-        data.Knowledge.Load(kiStream);
-        data.KIAsset = new() { name = "knowledge.json" };
-
-        // DEBUG
-        /*data.Add(
-          Keyword.None,
-          new KI_Trait(new Kw_Trait() {
-            Key = Keyword.None,
-            Description = "Keyword for Nothing",
-          })
-        );*/
-      }
-      public void SaveData()
-      {
-        if (EditorUtility.DisplayDialog("Save Data", "Are you sure to save the data?", "Yes", "No"))
-        {
-          using var kwStream = new FileStream(data.JsonKeywordPath, FileMode.Create);
-          data.Keywords.Save(kwStream);
-
-          using var kiStream = new FileStream(data.JsonDataPath, FileMode.Create);
-          data.Knowledge.Save(kiStream);
+          using var kiStream = new FileStream(Instance.JsonDataPath, FileMode.Create);
+          RP_Knowledge.Instance.Save(kiStream);
         }
       }
-      public enum GenerateType { Both, Main, Keyword }
-      /*
-      private void TryGenerateNewFile(string title, GenerateType type = GenerateType.Both)
-      {
-        switch (type)
-        {
-          case GenerateType.Both:
-            if (EditorUtility.DisplayDialog(
-              title,
-              "Need to generate data file for start editing. Do you want to generate a new file?",
-              "Generate",
-              "Cancel"
-            ))
-            {
-              data.keyword = new();
-              data.knowledge = new();
-              SaveData();
-
-              data.KwAsset = new();
-              data.KIAsset = new();
-            }
-            break;
-          case GenerateType.Main:
-            switch (EditorUtility.DisplayDialogComplex(
-              title,
-              "Need to generate data file for start editing. Do you want to generate a new file?",
-              "Generate",
-              "Cancel",
-              "Data Only"
-            ))
-            {
-              case 0:
-                data.knowledge = new();
-                SaveData();
-                data.KIAsset = new();
-                break;
-              case 1:
-                break;
-              case 2:
-                data.knowledge = new();
-                data.KIAsset = new();
-                break;
-              default: break;
-            }
-            break;
-          case GenerateType.Keyword:
-            switch (EditorUtility.DisplayDialogComplex(
-              title,
-              "Need to generate data file for start editing. Do you want to generate a new file?",
-              "Generate",
-              "Cancel",
-              "Keyword Only"
-            ))
-            {
-              case 0:
-                data.keyword = new();
-                SaveData();
-                data.KwAsset = new();
-                break;
-              case 1:
-                break;
-              case 2:
-                data.keyword = new();
-                data.KwAsset = new();
-                break;
-              default: break;
-            }
-            break;
-          default: break;
-        }
-      }
-      */
     }
-    private readonly Serialization serialization = new();
+    private SerializationProperties Serialization { get; } = new();
 
-    private class GUIState
-    {
-      public enum Tab { Knowledge, Keywords, Settings, None }
-      public Tab tab = Tab.Settings;
-      public class KnowledgeState
-      {
-        public Vector2 Scroll { get; set; }
-        public Keyword Selected { get; set; }
-
-        // Knowledge Data
-        public IKnowledgeInfo EditData { get; set; }
-        public Sprite IconRef { get; set; }
-      }
-      public KnowledgeState Knowledge { get; } = new();
+    private class StateProperties {
+      public enum Tab { Knowledge, Keywords, Setting, None }
+      public Tab tab = Tab.Setting;
     }
-    private readonly GUIState state = new();
+    private StateProperties State { get; } = new();
     #endregion
 
-    #region Layout Functions
-    private int indent = 0;
-    private void BeginIndent(bool horizontalPadding = true, bool verticalPadding = true)
-    {
-      var style = EStyle.Background(++indent);
-      style.padding = (horizontalPadding, verticalPadding) switch
-      {
-        (true, true) => new(8, 8, 8, 8),
-        (true, false) => new(8, 8, 0, 0),
-        (false, true) => new(0, 0, 8, 8),
-        _ => new(0, 0, 0, 0)
-      };
-      GUILayout.BeginVertical(style);
-    }
-    private void EndIndent()
-    {
-      GUILayout.EndVertical();
-      indent--;
-    }
-    private GUIStyle KeyStyle => new("RL Element")
-    {
-      alignment = TextAnchor.MiddleCenter,
-      fontStyle = FontStyle.Bold,
-      fontSize = 16,
-      fixedHeight = 32,
-    };
-    #endregion
+    private void OnGUI() {
+      ELayout.BeginIndent();
 
-    private void OnGUI()
-    {
-      BeginIndent();
-      {
-        G_TabMenu();
-        G_Main();
-      }
-      EndIndent();
+      TabLayout();
+      MainLayout();
+
+      ELayout.EndIndent();
     }
 
-    #region Main Layout
-    void G_TabMenu()
-    {
+    void TabLayout() {
       EditorGUILayout.BeginHorizontal();
-      {
-        state.tab =
-          GUILayout.Button("Knowledge", state.tab == GUIState.Tab.Knowledge ? EStyle.HeaderTabOn : EStyle.HeaderTabOff) ? GUIState.Tab.Knowledge :
-          GUILayout.Button("Keywords", state.tab == GUIState.Tab.Keywords ? EStyle.HeaderTabOn : EStyle.HeaderTabOff) ? GUIState.Tab.Keywords :
-          GUILayout.Button("Settings", state.tab == GUIState.Tab.Settings ? EStyle.HeaderTabOn : EStyle.HeaderTabOff) ? GUIState.Tab.Settings :
-          state.tab;
-      }
+      State.tab =
+        GUILayout.Button("Knowledge", State.tab == StateProperties.Tab.Knowledge ? EStyle.HeaderTabOn : EStyle.HeaderTabOff) ? StateProperties.Tab.Knowledge :
+        GUILayout.Button("Keywords", State.tab == StateProperties.Tab.Keywords ? EStyle.HeaderTabOn : EStyle.HeaderTabOff) ? StateProperties.Tab.Keywords :
+        GUILayout.Button("Setting", State.tab == StateProperties.Tab.Setting ? EStyle.HeaderTabOn : EStyle.HeaderTabOff) ? StateProperties.Tab.Setting :
+        State.tab;
       EditorGUILayout.EndHorizontal();
     }
-    void G_Main()
-    {
-      BeginIndent();
-      {
-        var _ = state.tab switch
-        {
-          GUIState.Tab.Knowledge => GM_Knowledge(),
-          GUIState.Tab.Keywords => GM_Keyword(),
-          GUIState.Tab.Settings => GM_Settings(),
-          _ => G_()
-        };
-      }
-      EndIndent();
+
+    void MainLayout() {
+      ELayout.BeginIndent();
+      var _ = State.tab switch {
+        StateProperties.Tab.Knowledge => KnowledgeTab.DoLayout(),
+        StateProperties.Tab.Keywords => GM_Keyword(),
+        StateProperties.Tab.Setting => GM_Setting(),
+        _ => throw new System.NotImplementedException()
+      };
+      ELayout.EndIndent();
     }
-    #endregion
 
-    int GM_Keyword()
-    {
-      if (data.KwAsset == null)
-      {
-        EditorGUILayout.LabelField(
-          "Load or Create Data to Start Editing",
-          EStyle.BoldCenterLabel
-        );
-        return 0;
-      }
-
-      EditorGUILayout.LabelField(
-        $"{data.Keywords.Count} Keywords Loaded",
-        EStyle.BoldCenterLabel
-      );
-
-      GUILayout.FlexibleSpace();
+    int GM_Keyword() {
       return 0;
     }
-    
-    int GM_Settings()
-    {
+
+    int GM_Setting() {
+      TextAsset kwA = KeywordTab.State.DisplayAsset, kiA = KnowledgeTab.State.DisplayAsset;
+
       EditorGUILayout.BeginHorizontal();
       {
         EditorGUILayout.LabelField("Files:", GUILayout.Width(40));
         GUI.enabled = false;
-        EditorGUILayout.ObjectField(GUIContent.none, data.KIAsset, typeof(TextAsset), false);
-        EditorGUILayout.ObjectField(GUIContent.none, data.KwAsset, typeof(TextAsset), false);
+        EditorGUILayout.ObjectField(kwA, typeof(TextAsset), false);
+        EditorGUILayout.ObjectField(kiA, typeof(TextAsset), false);
         GUI.enabled = true;
-        if (GUILayout.Button("Load", GUILayout.Width(50))) serialization.LoadData();
-        GUI.enabled = data.KIAsset != null && data.KwAsset != null;
-        if (GUILayout.Button("Save", GUILayout.Width(50))) serialization.SaveData();
+        if (GUILayout.Button("Load", GUILayout.Width(50))) Serialization.LoadData();
+        GUI.enabled = kwA != null && kiA != null;
+        if (GUILayout.Button("Save", GUILayout.Width(50))) Serialization.SaveData();
         GUI.enabled = true;
       }
       EditorGUILayout.EndHorizontal();
@@ -286,7 +122,11 @@ namespace TRIdle.Editor
       GUILayout.FlexibleSpace();
       return 0;
     }
+  }
 
-    int G_() => 0;
+
+  public interface ITabLayout {
+    void Initialize();
+    int DoLayout();
   }
 }

@@ -2,18 +2,15 @@ using System;
 using System.Text.Json.Serialization;
 using UnityEngine;
 
-namespace TRIdle.Game.Skill
-{
+namespace TRIdle.Game.Skill {
   using Knowledge;
 
   #region Derived Attributes
   [JsonDerivedType(typeof(SB_WoodCutting.SA_WoodCutting), typeDiscriminator: "WoodCutting")]
   [JsonDerivedType(typeof(SB_WoodCutting.SA_StickGathering), typeDiscriminator: "StickGathering")]
   #endregion
-  public abstract class ActionBase
-  {
-    public ActionBase()
-    {
+  public abstract class ActionBase {
+    public ActionBase() {
       Callbacks = new ActionEvents(DefaultCallbacks, CustomCallbacks);
     }
 
@@ -52,12 +49,11 @@ namespace TRIdle.Game.Skill
     public ActionEvents Callbacks { get; }
 
     [JsonIgnore] protected virtual ActionCallbacks CustomCallbacks => new();
-    [JsonIgnore] private ActionCallbacks DefaultCallbacks => new()
-    {
+    [JsonIgnore]
+    private ActionCallbacks DefaultCallbacks => new() {
       OnStart = () => IsPerforming = true,
       OnProgress = deltaTime => CurrentProgress += deltaTime,
-      OnPerform = () =>
-      {
+      OnPerform = () => {
         Skill.Proficiency += Skill.ProficiencyBase * SkillProficiencyMultiplier.Value;
         CurrentProgress = 0;
         if (Repeatable) Callbacks.Repeat();
@@ -84,8 +80,7 @@ namespace TRIdle.Game.Skill
   public delegate void ActionCallback();
   public delegate void ProgressCallback(float deltaTime);
   /// <summary>Stores event callbacks for <see cref="ActionBase"/> Instances.</summary>
-  public class ActionEvents
-  {
+  public class ActionEvents {
     public event ActionCallback OnStart;
     public void Start() => OnStart?.Invoke();
     public event ProgressCallback OnProgress;
@@ -102,10 +97,8 @@ namespace TRIdle.Game.Skill
     /// <summary>Create a new instance without any callbacks.</summary>
     public ActionEvents() { }
     /// <summary>Create a new instance with predefined callbacks.</summary>
-    public ActionEvents(params ActionCallbacks[] delegates)
-    {
-      foreach (var d in delegates)
-      {
+    public ActionEvents(params ActionCallbacks[] delegates) {
+      foreach (var d in delegates) {
         OnStart += d.OnStart;
         OnProgress += d.OnProgress;
         OnPerform += d.OnPerform;
@@ -117,8 +110,7 @@ namespace TRIdle.Game.Skill
   }
 
   /// <summary>Stores a set of predefined callbacks for <see cref="ActionBase"/> instances.</summary>
-  public class ActionCallbacks
-  {
+  public class ActionCallbacks {
     public ActionCallback OnStart { get; set; } = () => { };
     public ProgressCallback OnProgress { get; set; } = _ => { };
     public ActionCallback OnPerform { get; set; } = () => { };
