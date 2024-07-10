@@ -27,12 +27,12 @@ namespace TRIdle.Knowledge {
   [JsonDerivedType(typeof(Kw_Incident), "Incident")]
   #endregion
   public abstract class KeywordBase {
-    public Keyword Key { get; set; }
+    [JsonIgnore] public Keyword Key { get; set; }
     public string Description { get; set; }
     public abstract KeywordType Type { get; }
 
     public override string ToString()
-      => $"[{Key}({Type}): \"{Description}\"]";
+      => $"[{Type}:{Key}]";
   }
 
   public class Kw_Item : KeywordBase {

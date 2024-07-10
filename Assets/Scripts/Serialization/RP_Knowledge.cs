@@ -32,6 +32,15 @@ namespace TRIdle {
     public class RP_Keyword : IRepository<Keyword, KeywordBase> {
       private RP_Keyword() { }
       public static RP_Keyword Instance { get; } = new();
+
+      public override void Load(Stream stream) {
+        base.Load(stream);
+
+        // Manually assign key to each keyword because of avoiding serialization
+        foreach (var key in instRepo.Keys)
+          if (instRepo[key] is KeywordBase keyword)
+            keyword.Key = key;
+      }
     }
   }
 

@@ -50,7 +50,7 @@ namespace TRIdle.Editor {
     #endregion
   }
 
-  public class ELayout {
+  public partial class ELayout {
     private static int indent = 0;
     public static void BeginIndent(bool horizontalPadding = true, bool verticalPadding = true) {
       var style = EStyle.Background(++indent);
@@ -69,6 +69,13 @@ namespace TRIdle.Editor {
 
     public static void FlexibleHeight() => GUILayout.Label(GUIContent.none, GUILayout.ExpandHeight(true));
     public static void FlexibleWidth() => GUILayout.Label(GUIContent.none, GUILayout.ExpandWidth(true));
+    public static void ExpandedSpace() {
+      EditorGUILayout.BeginHorizontal();
+      EditorGUILayout.BeginVertical();
+      GUILayout.FlexibleSpace();
+      EditorGUILayout.EndVertical();
+      EditorGUILayout.EndHorizontal();
+    }
 
     public static T Popup<T>(string label, T selected, T[] values) {
       var index = System.Array.IndexOf(values, selected);
@@ -76,6 +83,4 @@ namespace TRIdle.Editor {
       return values[newIndex];
     }
   }
-
-
 }

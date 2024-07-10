@@ -1,6 +1,7 @@
 using System;
 using System.Linq;
 using System.Collections.Generic;
+using System.Text.RegularExpressions;
 
 using UnityEngine;
 using UnityEditor;
@@ -124,20 +125,7 @@ namespace TRIdle.Editor {
 
         #region Edit Area
         ELayout.BeginIndent();
-        if (State.EditData != null) {
-          EditLayout();
-          GUILayout.FlexibleSpace();
-          ButtonLayout();
-        }
-        else {
-          EditorGUILayout.LabelField("Select a Keyword to Edit", EStyle.BoldCenterLabel);
-          // Layout margins (Don't know why it works)
-          GUILayout.BeginHorizontal();
-          GUILayout.FlexibleSpace();
-          GUILayout.EndHorizontal();
-
-          ELayout.FlexibleHeight();
-        }
+        EditLayout();
         ELayout.EndIndent();
         #endregion
       }
@@ -147,52 +135,34 @@ namespace TRIdle.Editor {
 
     void EditLayout() {
       var edit = State.EditData;
+      if (edit == null) {
+        EditorGUILayout.LabelField("Select a Keyword to Edit", EStyle.BoldCenterLabel);
+        GUILayout.FlexibleSpace();
+        ButtonLayout();
+        return;
+      }
 
-      // Keyword
-      SelectKeyLayout();
-
-      // Type
-      var type = (KeywordType)EditorGUILayout.EnumPopup("Type", edit.Type);
-      if (type != edit.Type)
-        if (EditorUtility.DisplayDialog("Type Change", "Type change will discard specific Main.data. Are you sure?", "Yes", "No"))
-          edit = State.EditData = edit.Convert(type);
+      #region Layout Body
+      EditorGUILayout.BeginHorizontal();
+      {
+        EditorGUILayout.BeginVertical();
+        {
+          SelectKeyLayout();
+          SelectTypeLayout();
+        }
+        EditorGUILayout.EndVertical();
+        SelectIconLayout();
+      }
+      EditorGUILayout.EndHorizontal();
 
       EditorGUILayout.Space();
 
-      // Description
-      GUILayout.BeginHorizontal();
-      {
-        EditorGUILayout.LabelField("Description");
-        edit.FlatDescription = GUILayout.TextArea(edit.FlatDescription, GUILayout.ExpandWidth(true));
-      }
-      GUILayout.EndHorizontal();
-
-      // Icon
-
-      // Try to load the icon from the saved path once only
-      if (State.IconLoaded is false) {
-        var savedPath = $"Assets/Resources/{edit.IconPath}";
-        if (AssetDatabase.LoadAssetAtPath<Sprite>(savedPath) is Sprite savedSprite) {
-          State.SelectedIcon = savedSprite;
-        }
-        State.IconLoaded = true;
-      }
-
-      State.SelectedIcon = EditorGUILayout.ObjectField("Icon", State.SelectedIcon, typeof(Sprite), false) as Sprite;
-      var selectedIconPath = AssetDatabase.GetAssetPath(State.SelectedIcon);
-
-      // Check if the icon is changed
-      if (selectedIconPath?.Length > 0) {
-        var newPath = $"{KIAssetPath}{edit.Keyword}.png";
-        edit.IconPath = newPath[17..]; // Remove "Assets/Resources/" from the path (AssetPath => ResourcePath)
-                                       // Try to copy the icon to the new path
-        if (selectedIconPath != newPath && AssetDatabase.CopyAsset(selectedIconPath, newPath)) {
-          if (selectedIconPath.StartsWith(KIAssetPath)) AssetDatabase.DeleteAsset(selectedIconPath);
-          AssetDatabase.Refresh();
-          State.SelectedIcon = AssetDatabase.LoadAssetAtPath<Sprite>(newPath);
-        }
-      }
-      else edit.IconPath = "";
+      DescriptionLayout();
+      // TODO : 생각 좀 해보자
+      // Knowledge에 Keyword 요소를 추가하는 것은 기본적으로 Description에 영향이 가야 한다.
+      // 당연히 이 때 Serialized되는 텍스트는 Regex로 처리할 수 있는데, 에디터상에서는 어떻게 표현해야 하는가
+      // 1. Description에 특정 키워드를 입력하면 해당 키워드를 선택할 수 있는 버튼이 나타난다.
+      //    - 중요한 점 : 커서 바로 밑에 오버레이가 나타나야 한다. 유니티상에서 가능할까?
 
       // Specific Data
       switch (edit.Type) {
@@ -203,36 +173,94 @@ namespace TRIdle.Editor {
           var item = edit as KI_Item;
           break;
       }
-    }
 
-    void SelectKeyLayout() {
-      var edit = State.EditData;
+      GUILayout.FlexibleSpace();
 
-      var validKeys = GetAvailableKeywords(State.KeywordMenu).ToArray();
-      edit.Keyword = ELayout.Popup("Keyword", edit.Keyword, validKeys);
-    }
+      ButtonLayout();
+      #endregion
 
-    void ButtonLayout() {
-      GUILayout.BeginHorizontal();
-      {
-        GUILayout.FlexibleSpace();
-        GUI.enabled = !(Data.TryGetData(State.EditData.Keyword, out var prevData) && State.EditData.Same(prevData));
-        bool trySave = GUILayout.Button("Save", GUILayout.Width(50));
-        GUI.enabled = true;
-        if (trySave && EditorUtility.DisplayDialog("Save Changes", "Are you sure to save the changes?", "Yes", "No")) {
-          if (State.KeywordMenu != State.EditData.Keyword && Data.Add(State.EditData.Keyword, State.EditData)) {
-            Debug.Log("Keyword Changed");
-            Data.Remove(State.KeywordMenu);
-            State.KeywordMenu = State.EditData.Keyword;
-          }
-          else Data.Replace(State.KeywordMenu, State.EditData);
-
-          UpdateDisplayList();
-        }
-        if (GUILayout.Button("Cancel", GUILayout.Width(50))) State.EditData = Data.GetData(State.KeywordMenu);
+      #region Partial Layouts
+      void SelectKeyLayout() {
+        var validKeys = GetAvailableKeywords(State.KeywordMenu).ToArray();
+        edit.Keyword = ELayout.Popup("Keyword", edit.Keyword, validKeys);
       }
-      GUILayout.EndHorizontal();
+
+      void SelectTypeLayout() {
+        var type = (KeywordType)EditorGUILayout.EnumPopup("Type", edit.Type);
+        if (type != edit.Type)
+          if (EditorUtility.DisplayDialog("Type Change", "Type change will discard specific Main.data. Are you sure?", "Yes", "No"))
+            edit = State.EditData = edit.Convert(type);
+      }
+
+      void SelectIconLayout() {
+        if (State.IconLoaded is false) {
+          var savedPath = $"Assets/Resources/{edit.IconPath}";
+          if (AssetDatabase.LoadAssetAtPath<Sprite>(savedPath) is Sprite savedSprite) {
+            State.SelectedIcon = savedSprite;
+          }
+          State.IconLoaded = true;
+        }
+
+        State.SelectedIcon = EditorGUILayout.ObjectField(State.SelectedIcon, typeof(Sprite), false, GUILayout.Width(64), GUILayout.Height(64)) as Sprite;
+        var selectedIconPath = AssetDatabase.GetAssetPath(State.SelectedIcon);
+
+        // Check if the icon is changed
+        if (selectedIconPath?.Length > 0) {
+          var newPath = $"{KIAssetPath}{edit.Keyword}.png";
+          // Remove "Assets/Resources/" from the path (AssetPath => ResourcePath)
+          edit.IconPath = newPath[17..];
+          // Try to copy the icon to the new path
+          if (selectedIconPath != newPath && AssetDatabase.CopyAsset(selectedIconPath, newPath)) {
+            if (selectedIconPath.StartsWith(KIAssetPath)) AssetDatabase.DeleteAsset(selectedIconPath);
+            AssetDatabase.Refresh();
+            State.SelectedIcon = AssetDatabase.LoadAssetAtPath<Sprite>(newPath);
+          }
+        }
+        else edit.IconPath = "";
+      }
+
+      void DescriptionLayout() {
+        GUILayout.BeginHorizontal();
+        {
+          EditorGUILayout.LabelField("Description", GUILayout.Width(150));
+
+          // var text = EKeywordUtility.ParseToDynamic(edit.FlatDescription);
+          edit.FlatDescription = ELayout.DynamicTextArea("text", edit.FlatDescription);
+        }
+        GUILayout.EndHorizontal();
+      }
+
+
+      void ButtonLayout() {
+        GUILayout.BeginHorizontal();
+        {
+          GUILayout.FlexibleSpace();
+          GUI.enabled = State.EditData != null
+            ? Data.TryGetData(State.EditData.Keyword, out var prevData)
+              ? State.EditData.Same(prevData) is false // 기존 데이터가 존재하지 않거나, 변경된 경우에만 저장 가능
+              : true
+            : false;
+          bool trySave = GUILayout.Button("Save", GUILayout.Width(50));
+          GUI.enabled = true;
+          if (trySave && EditorUtility.DisplayDialog("Save Changes", "Are you sure to save the changes?", "Yes", "No")) {
+            if (State.KeywordMenu != State.EditData.Keyword && Data.Add(State.EditData.Keyword, State.EditData)) {
+              Debug.Log("Keyword Changed");
+              Data.Remove(State.KeywordMenu);
+              State.KeywordMenu = State.EditData.Keyword;
+            }
+            else Data.Replace(State.KeywordMenu, State.EditData);
+
+            UpdateDisplayList();
+          }
+          GUI.enabled = State.EditData != null;
+          if (GUILayout.Button("Cancel", GUILayout.Width(50))) State.EditData = Data.GetData(State.KeywordMenu);
+          GUI.enabled = true;
+        }
+        GUILayout.EndHorizontal();
+      }
+      #endregion
     }
+
 
     #endregion
 
@@ -246,6 +274,7 @@ namespace TRIdle.Editor {
       => from Keyword key in Enum.GetValues(typeof(Keyword))
          where key == current || (key > 0 && Data.TryGetData(key, out _) is false)
          select key;
+
     #endregion
   }
 }

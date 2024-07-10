@@ -27,6 +27,10 @@ namespace TRIdle.Editor {
 
     void OnEnable() {
       Instance = this;
+
+      // Start with Knowledge Tab
+      Serialization.LoadData();
+      State.tab = StateProperties.Tab.Knowledge;
     }
     #endregion
 

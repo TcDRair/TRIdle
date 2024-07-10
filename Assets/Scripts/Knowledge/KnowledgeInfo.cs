@@ -43,7 +43,6 @@ namespace TRIdle.Knowledge {
     [JsonIgnore] private readonly Regex keywordPattern = new(@"\{(?<Type>\w+):(?<Name>\w+)\}");
     [JsonIgnore] private MatchCollection keywordMatches;
     [JsonIgnore] private readonly Dictionary<string, KeywordBase> keywordList = new();
-    [JsonIgnore] public IEnumerable<Keyword> Keywords => keywordList.Values.Select(x => x.Key);
     [JsonIgnore] public IEnumerable<KeywordBase> AssociatedKeywords => keywordList.Values;
     [JsonIgnore] public Sprite MainImage => Resources.Load<Sprite>(IconPath);
     #endregion
