@@ -43,6 +43,11 @@ namespace TRIdle.Editor {
       padding = new(0, 0, 0, 0),
       normal = new() { background = (depth % 2 > 0 ? .2f : .25f).ToColor().ToTexture2D() },
     };
+    public static GUIStyle Background(Color color) => new() {
+      border = new(1, 1, 1, 1),
+      padding = new(0, 0, 0, 0),
+      normal = new() { background = color.ToTexture2D() },
+    };
 
 
     #region Caching

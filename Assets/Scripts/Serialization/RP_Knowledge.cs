@@ -26,6 +26,11 @@ namespace TRIdle {
       private RP_Knowledge() { }
       public static RP_Knowledge Instance { get; } = new();
 
+      public static IEnumerable<Keyword> GetKeywords(KeywordType type)
+        => from knowledge in Instance.instRepo
+           where knowledge.Value.Type == type
+           select knowledge.Key;
+
       public bool TryAddDefault() => instRepo.TryAdd(Keyword.None, new KI_Item()); // Default Type is Item
     }
 
