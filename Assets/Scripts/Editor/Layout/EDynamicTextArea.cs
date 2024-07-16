@@ -5,110 +5,146 @@ using System.Collections.Generic;
 using System.Text.RegularExpressions;
 
 using UnityEngine;
+using UnityEngine.InputSystem;
+using UnityEngine.InputSystem.Controls;
+
 using UnityEditor;
 
 namespace TRIdle.Editor {
   using Knowledge;
+  using Diff = RichTextUtility.Difference;
 
   public partial class ELayout {
-    private readonly static Dictionary<int, int> EditorID = new();
+    #region Private Utilities
     private readonly static GUIStyle RichTextArea = new(EditorStyles.textArea) {
       richText = true,
       wordWrap = true
     };
+
+    // TODO various styles
+    #endregion
+
+    #region Private Data
+    private readonly static Dictionary<int, int> EditorID = new();
+    private static int EditorIndex, SelectIndex;
+    private static Keyboard KInput => Keyboard.current;
+    #endregion
+
 
     public static string DynamicTextArea(object owner, string text, params GUILayoutOption[] options) {
       var stream = EKeywordUtility.ParseToDynamic(text);
       return DynamicTextArea(owner, stream, options);
     }
     public static string DynamicTextArea(object owner, DynamicText[] stream, params GUILayoutOption[] options) {
-
       var plain = string.Concat(stream.Select(x => x.Text));
       var displayText = string.Concat(stream.Select(x => x.DisplayText));
-
+      // All Editing will be done here
       EditorGUILayout.TextArea(displayText, RichTextArea, options);
 
-      if (GetTextEditor() is TextEditor editor) {
-        var ID = owner.GetHashCode();
 
-        // Registeration
-        if (!EditorID.ContainsKey(ID) && editor.text == displayText)
-          EditorID.Add(ID, editor.controlID);
+      return IsFocused(out var editor)
+        ? KeywordEditorAction(editor, displayText) // Edit will affect plain text
+        : plain;
 
-        // Edit
-        if (EditorID.TryGetValue(ID, out int CID) && CID == editor.controlID)
-          plain = KeywordEditorAction(editor, displayText); // Edit will affect plain text
+      bool IsFocused(out TextEditor editor) {
+        if ((editor = GetTextEditor()) is not null) {
+          // Registeration
+          var ID = owner.GetHashCode();
+          if (!EditorID.ContainsKey(ID) && editor.text == displayText) EditorID.Add(ID, editor.controlID);
+
+          // Focused
+          if (EditorID.TryGetValue(ID, out int CID) && CID == editor.controlID) return true;
+        }
+        return false;
       }
-
-      return plain;
     }
 
-    private static string KeywordEditorAction(TextEditor editor, string displayText) {
-      var edit = editor.text;
+    private static bool SelectMode;
+    private static Vector2 previousMousePosition;
+    private static string KeywordEditorAction(TextEditor editor, string before) {
+      // 1. Reserved Input Control
+      RevertIntellisenseControlInEdit(editor);
 
-      // 1. <> token as fixed (prevent adding or removing) (completed)
-      var diff = RichTextUtility.GetRefinedOutput(displayText, edit, editor.cursorIndex);
+      // 2. Revert Invalid Edit
+      Diff diff2 = RichTextUtility.FindDifference(before, editor.text);
+      Diff diff = RichTextUtility.GetRefinedOutput(diff2, editor.cursorIndex);
 
-      var plainDiff = diff.ToPlain();
-      // Debug.Log(plainDiff.Explain());
+      // 3. Removing completed keyword token => Select whole keyword Instead
+      string plain = SelectKeywordInsteadOfRemoving(diff, editor).ToString().RemoveTagTokens();
 
-      // 2. [a:b] token as whole (backspace/delete invoke total selection)
-      SelectKeywordInsteadOfRemoving();
+      // 4. Keyword Intellisense
+      KeywordIntellisenseLayout(editor, plain);
 
-      // 3. [ token as progress (adding invokes proper closing)
-      KeywordIntellisense();
-
-      // Result
-      var plain = plainDiff.ToString().RemoveTagTokens();
+      // 5. Display text
       editor.text = string.Concat(EKeywordUtility.ParseToDynamic(plain).Select(x => x.DisplayText));
+
+      // 6. Update Properties
+      EditorIndex = editor.cursorIndex;
 
       return plain;
 
-      void SelectKeywordInsteadOfRemoving() {
-        if (plainDiff.removed is "]") {
-          int start = plainDiff.prev.LastIndexOf('[');
+      #region Local Functions
+      static void RevertIntellisenseControlInEdit(TextEditor editor) {
+        if (SelectMode is false) return;
+        
+        if (KInput.upArrowKey.isPressed || KInput.downArrowKey.isPressed) {
+          editor.cursorIndex = editor.selectIndex = EditorIndex;
+        }
+        if (KInput.tabKey.HasKeyDown_Editor()) {
+          // Remove Tab Key
+        }
+        
+        if (Keyboard.current.escapeKey.HasKeyDown_Editor())
+          SelectMode = false;
+      }
+
+      static Diff SelectKeywordInsteadOfRemoving(Diff plain, TextEditor editor) {
+        if (plain.removed is "]") {
+          editor.Insert('[');
+          int start = plain.prev.LastIndexOf('[');
           if (start >= 0) {
-            plainDiff.prev += ']';
+            plain.prev += ']';
             editor.selectIndex = start;
-            editor.cursorIndex = plainDiff.prev.Length;
+            editor.cursorIndex = plain.prev.Length;
           }
         }
-        if (plainDiff.removed is "[") {
-          int end = plainDiff.next.IndexOf(']');
+
+        if (plain.removed is "[") {
+          int end = plain.next.IndexOf(']');
           if (end >= 0) {
-            plainDiff.next = '[' + plainDiff.next;
-            editor.cursorIndex = plainDiff.ToString().Length - plainDiff.next.Length;
+            plain.next = '[' + plain.next;
+            editor.cursorIndex = plain.ToString().Length - plain.next.Length;
             editor.selectIndex = editor.cursorIndex + end + 2; // +2 for '[' and ']'
           }
         }
+
+        return plain;
       }
 
-      void KeywordIntellisense() {
-        // TODO : Overlay Window + Caret Position
-
-        // TODO : Enum / StartsWith / Contains => Overlay list + AutoComplete(Tab) + ArrowKey to select
-        if (KeywordEdit_Type.TryMatch(plainDiff.prev, out var typeMatch)) {
+      static void KeywordIntellisenseLayout(TextEditor editor, string plain) {
+        if (KeywordEdit_Type.TryMatch(plain[..editor.cursorIndex], out var typeMatch)) {
+          SelectMode = true;
           var types = Enum.GetNames(typeof(KeywordType));
           var type = typeMatch.Groups["Type"].Value;
 
-          Rect rect = new(GetEditorPosition(typeMatch.Index), default);
+          Rect rect = new(GetEditorPosition(editor, typeMatch.Index), default);
           DrawIntellisenseRect(rect, type, types);
+        }
+        else if (KeywordEdit_Name.TryMatch(plain[..editor.cursorIndex], out var nameMatch)) {
+          SelectMode = true;
+          var names = Enum.GetNames(typeof(Keyword));
+          var name = nameMatch.Groups["Name"].Value;
 
-          // Find All keyword types starts with or contains above
-          // If found, list them
-          // If not, list all
+          Rect rect = new(GetEditorPosition(editor, nameMatch.Index), default);
+          DrawIntellisenseRect(rect, name, names);
         }
-        else if (KeywordEdit_Name.TryMatch(plainDiff.prev, out var nameMatch)) {
-          // if (nameMatch.Groups["Type"].Success)
-          // => Find All keyword of that type and do below
-          // nameMatch.Groups["Name"].Value
-          // Find All keyword starts with or contains above
-          // If found, list them
-          // If not, list all
-        }
+        else SelectIndex = 0;
       }
 
-      void DrawIntellisenseRect(Rect rect, string token, IEnumerable<string> list) {
+      static Vector2 GetEditorPosition(TextEditor editor, int index)
+        => editor.style.GetCursorPixelPosition(editor.position, new(editor.text), index);
+
+      static void DrawIntellisenseRect(Rect rect, string token, IEnumerable<string> list) {
         rect.y += EditorGUIUtility.singleLineHeight;
         rect.size = new(120, 160);
 
@@ -116,21 +152,51 @@ namespace TRIdle.Editor {
         var contains = list.Where(x => x.Contains(token, StringComparison.OrdinalIgnoreCase)).Except(startsWith).OrderBy(x => x);
         var remain = list.Except(startsWith).Except(contains).OrderBy(x => x);
 
-        Color background = new(.3f, .3f, .3f);
+        // Selection Control
+        ApplyIntellisenseControl(token, list);
+
+        // Draw Layouts
+        Color background = new(.3f, .3f, .3f), selected = new(.25f, .25f, .25f);
         GUILayout.BeginArea(rect);
-        // TODO : Area Background color
         GUILayout.BeginVertical(EStyle.Background(background));
-        {
-          foreach (var item in startsWith) GUILayout.Label(item);
-          foreach (var item in contains) GUILayout.Label(item);
-          // foreach (var item in remain) GUILayout.Label(item);
-        }
+
+        DrawLayout();
+
         GUILayout.EndVertical();
         GUILayout.EndArea();
+
+        void DrawLayout() {
+          int i = 0;
+          foreach (var item in startsWith) {
+            if (i == SelectIndex) GUILayout.Label(item, EStyle.Background(selected, "Label"));
+            else GUILayout.Label(item);
+            i++;
+          }
+          foreach (var item in contains) {
+            if (i == SelectIndex) GUILayout.Label(item, EStyle.Background(selected, "Label"));
+            else GUILayout.Label(item);
+            i++;
+          }
+          // foreach (var item in remain) GUILayout.Label(item);
+        }
       }
-    
-      Vector2 GetEditorPosition(int index)
-        => editor.style.GetCursorPixelPosition(editor.position, new(editor.text), index);
+
+      static void ApplyIntellisenseControl(string token, IEnumerable<string> list) {
+        var startsWith = list.Where(x => x.StartsWith(token, StringComparison.OrdinalIgnoreCase)).OrderBy(x => x);
+        var contains = list.Where(x => x.Contains(token, StringComparison.OrdinalIgnoreCase)).Except(startsWith).OrderBy(x => x);
+        var remain = list.Except(startsWith).Except(contains).OrderBy(x => x);
+
+        int count = startsWith.Count() + contains.Count();
+        if (count == 0) return;
+
+        var keyboard = Keyboard.current;
+        if (keyboard.upArrowKey.HasKeyDown_Editor())
+          SelectIndex = (SelectIndex - 1 + count) % count;
+        if (keyboard.downArrowKey.HasKeyDown_Editor())
+          SelectIndex = (SelectIndex + 1) % count;
+      }
+
+      #endregion
     }
 
     #region Text Editor Utility
@@ -152,6 +218,16 @@ namespace TRIdle.Editor {
     private readonly static Regex KeywordEdit_Name = new(@"\[(?<Type>[^\[\]:\s\n]+):(?<Name>[^\[\]:\s\n]*)$");
     #endregion
   }
+
+  #region Editor Input System
+  public static class EditorInputSystemUtility {
+    private readonly static Dictionary<KeyControl, bool> pressed = new();
+    public static bool HasKeyDown_Editor(this KeyControl control) {
+      bool has = pressed.TryGetValue(control, out bool value) && value;
+      return (pressed[control] = control.isPressed) && !has;
+    }
+  }
+  #endregion
 
   #region DynamicText Definitions
   public partial class EKeywordUtility {

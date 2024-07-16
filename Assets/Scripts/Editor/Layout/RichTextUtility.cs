@@ -14,7 +14,11 @@ namespace TRIdle.Editor {
       public readonly bool IsRemoved => removed?.Length > 0;
       public readonly bool IsRemovedMany => removed?.Length > 1;
 
-      public override readonly string ToString() => $"{prev}{added}{restored}{next}";
+      public readonly string Before => $"{prev}{removed}{next}";
+      public readonly string After => $"{prev}{added}{next}";
+      public readonly string Result => $"{prev}{added}{restored}{next}";
+
+      public override readonly string ToString() => Result;
       public readonly string ToPlainString() => GetPlainText(ToString());
       public readonly Difference ToPlain() {
         Difference plain = new() {
@@ -59,29 +63,30 @@ namespace TRIdle.Editor {
     /// </code>
     /// </example>
     public static Difference GetRefinedOutput(string before, string after, int cursorIndex) {
-      if (IsValidRichText(before, out var plain) is false) throw new ArgumentException("Invalid rich text", nameof(before));
+      if (IsValidRichText(before, out _) is false) throw new ArgumentException("Invalid rich text", nameof(before));
+      var diff = FindDifference(before, after);
+      return GetRefinedOutput(diff, cursorIndex);
+    }
 
-      var diff = FindDiff(before, after);
-
+    public static Difference GetRefinedOutput(Difference diff, int cursorIndex) {
       // Addition:  Simply remove all tag brackets(+ complete tags) added
       if (diff.IsAdded) diff.added = RegexPattern.DetectTagAddition.Replace(diff.added, "");
       // Selection Removal: Restore the removed tag brackets
       if (diff.IsRemovedMany)
         diff.restored = string.Concat(
           RegexPattern.DetectTagRemoval.Matches(diff.removed)
-            .Select(m => m.Groups[RegexName.AnyTag].Value)
-        );
+            .Select(m => m.Groups[RegexName.AnyTag].Value));
       // Single Removal: Propagate the removal ouside tag brackets
       else if (diff.IsRemoved) PropagateRemoval();
 
-      return diff;
+      return diff.ToPlain();
 
       void PropagateRemoval() {
         // If the removed char is not a tag bracket, the action is valid
         if (diff.removed is not ("<" or ">")) return;
 
         // Backspace: Remove the last valid letter in the pre text
-        var indexes = RichTextIndex(before);
+        var indexes = RichTextIndex(diff.Before);
         bool isBackspace = cursorIndex < indexes.Length && indexes[cursorIndex] < diff.start;
         if (isBackspace) {
           diff.prev = $"{diff.prev}{diff.removed}"; // Add the last char
@@ -107,34 +112,31 @@ namespace TRIdle.Editor {
           else diff.next = diff.next[1..]; // Remove the first char
         }
       }
+    }
+    public static Difference FindDifference(string before, string after) {
+      if (after.ToPlainString(false).Length == 0) return new() { removed = before };
 
-      static string Plain(string rich) => RegexPattern.AnyTag.Replace(rich, "");
+      int start, end;
+      int min = Math.Min(before.Length, after.Length), max = Math.Max(before.Length, after.Length);
+      // Find the first difference
+      for (start = 0; start < min; start++)
+        if (before[start] != after[start])
+          break;
+      // Find the last difference
+      for (end = 1; end < max - start; end++)
+        if (before[^end] != after[^end])
+          break;
+      end--;
 
-      static Difference FindDiff(string before, string after) {
-        if (Plain(after).Length == 0) return new() { removed = before };
+      return new() {
+        start = start,
+        end = end,
 
-        int start, end;
-        int min = Math.Min(before.Length, after.Length), max = Math.Max(before.Length, after.Length);
-        // Find the first difference
-        for (start = 0; start < min; start++)
-          if (before[start] != after[start])
-            break;
-        // Find the last difference
-        for (end = 1; end < max - start; end++)
-          if (before[^end] != after[^end])
-            break;
-        end--;
-
-        return new() {
-          start = start,
-          end = end,
-
-          prev = (start > 0) ? after[..start] : string.Empty,
-          removed = (start + end < before.Length) ? before[start..^end] : string.Empty,
-          added = (start + end < after.Length) ? after[start..^end] : string.Empty,
-          next = (end > 0) ? after[^end..] : string.Empty
-        };
-      }
+        prev = (start > 0) ? after[..start] : string.Empty,
+        removed = (start + end < before.Length) ? before[start..^end] : string.Empty,
+        added = (start + end < after.Length) ? after[start..^end] : string.Empty,
+        next = (end > 0) ? after[^end..] : string.Empty
+      };
     }
 
     #region Regex Utility
@@ -186,10 +188,10 @@ namespace TRIdle.Editor {
 
       if (removeValidTagsOnly)
         // Remove all complete tags
-        while (RegexPattern.FullTag.TryReplace(result, out result, m => m.Groups[RegexName.TagBody].Value));
+        while (RegexPattern.FullTag.TryReplace(result, out result, m => m.Groups[RegexName.TagBody].Value)) ;
       else
         // Remove all tags
-        while (RegexPattern.AnyTag.TryReplace(result, out result, ""));
+        while (RegexPattern.AnyTag.TryReplace(result, out result, "")) ;
 
       return result;
     }
@@ -208,11 +210,12 @@ namespace TRIdle.Editor {
   }
 
   public static class Ext {
-    public static string ToPlainString(this string richText) => RichTextUtility.GetPlainText(richText);
+    public static string ToPlainString(this string richText, bool removeValidTagsOnly = true)
+      => RichTextUtility.GetPlainText(richText, removeValidTagsOnly);
     public static string RemoveTagTokens(this string text) => text.Replace("<", "").Replace(">", "");
     public static bool TryMatch(this Regex regex, string input, out Match match)
       => (match = regex.Match(input)).Success;
-    
+
     public static bool TryReplace(this Regex regex, string input, out string result, string replacement) {
       if (regex.IsMatch(input)) {
         result = regex.Replace(input, replacement);

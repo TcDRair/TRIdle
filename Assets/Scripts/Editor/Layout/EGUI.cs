@@ -2,6 +2,7 @@ using System.Linq;
 
 using UnityEngine;
 using UnityEditor;
+using System.Runtime.InteropServices;
 
 namespace TRIdle.Editor {
   public class EStyle {
@@ -38,17 +39,17 @@ namespace TRIdle.Editor {
       fixedHeight = 32,
     };
 
-    public static GUIStyle Background(int depth = 0) => new() {
-      border = new(1, 1, 1, 1),
-      padding = new(0, 0, 0, 0),
-      normal = new() { background = (depth % 2 > 0 ? .2f : .25f).ToColor().ToTexture2D() },
-    };
-    public static GUIStyle Background(Color color) => new() {
-      border = new(1, 1, 1, 1),
-      padding = new(0, 0, 0, 0),
-      normal = new() { background = color.ToTexture2D() },
-    };
-
+    public static GUIStyle Background(int depth = 0) => Background((depth % 2 > 0 ? .2f : .25f).ToColor(), null);
+    public static GUIStyle Background(Color color, GUIStyle other = null) {
+      GUIStyle style = other is null ? new() : new(other);
+      BG(style, color);
+      return style;
+    }
+    private static void BG(GUIStyle style, Color color) {
+      style.border = new(1, 1, 1, 1);
+      style.padding = new(0, 0, 0, 0);
+      style.normal.background = color.ToTexture2D();
+    }
 
     #region Caching
     static GUIStyle _label, _button, _boldLabel, _richText, _boldCenterLabel, _headerTabOn, _headerTabOff, _keyStyle;
