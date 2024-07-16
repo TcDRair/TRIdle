@@ -224,12 +224,10 @@ namespace TRIdle.Editor {
         {
           EditorGUILayout.LabelField("Description", GUILayout.Width(150));
 
-          // var text = EKeywordUtility.ParseToDynamic(edit.FlatDescription);
           edit.FlatDescription = ELayout.DynamicTextArea("text", edit.FlatDescription);
         }
         GUILayout.EndHorizontal();
       }
-
 
       void ButtonLayout() {
         GUILayout.BeginHorizontal();

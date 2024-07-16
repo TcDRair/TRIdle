@@ -2,39 +2,42 @@ using System;
 using System.Linq;
 using System.Collections.Generic;
 using System.Text.RegularExpressions;
+using UnityEditor.SceneManagement;
 
 namespace TRIdle.Editor {
   public class RichTextUtility {
-    public struct Difference {
+    public class Difference {
       public int start, end;
       public string prev, added, removed, next;
       public string restored;
 
-      public readonly bool IsAdded => added?.Length > 0;
-      public readonly bool IsRemoved => removed?.Length > 0;
-      public readonly bool IsRemovedMany => removed?.Length > 1;
+      public bool IsAdded => added?.Length > 0;
+      public bool IsRemoved => removed?.Length > 0;
+      public bool IsRemovedMany => removed?.Length > 1;
 
-      public readonly string Before => $"{prev}{removed}{next}";
-      public readonly string After => $"{prev}{added}{next}";
-      public readonly string Result => $"{prev}{added}{restored}{next}";
+      public string Before => $"{prev}{removed}{next}";
+      public string After => $"{prev}{added}{next}";
+      public string Result => $"{prev}{added}{restored}{next}";
 
-      public override readonly string ToString() => Result;
-      public readonly string ToPlainString() => GetPlainText(ToString());
-      public readonly Difference ToPlain() {
+      #region String
+      public string PlainText => GetPlainText(Result).RemoveTagTokens();
+      public override string ToString() => Result;
+      public Difference ToPlain() {
         Difference plain = new() {
-          prev = GetPlainText(prev, false),
-          added = GetPlainText(added, false),
-          removed = GetPlainText(removed, false),
-          next = GetPlainText(next, false),
-          restored = GetPlainText(restored, false)
+          prev = GetPlainText(prev),
+          added = GetPlainText(added),
+          removed = GetPlainText(removed),
+          next = GetPlainText(next),
+          restored = GetPlainText(restored)
         };
         plain.start = plain.prev.Length;
         plain.end = plain.ToString().Length - plain.next.Length;
+        
         return plain;
       }
-      public readonly string Explain(bool rich = true)
+      public string Explain(bool rich = true)
         => rich ? Exp() : Exp().Replace("<", "{").Replace(">", "}");
-      readonly string Exp()
+      string Exp()
         => added.Length == 0 && removed.Length == 0
           ? "Difference: Not changed"
           : $"Difference: {start} {ToString().Length - end}\n" +
@@ -43,8 +46,9 @@ namespace TRIdle.Editor {
             $"Restored: {restored}\n" +
             $"Next: {next}\n" +
             $"Removed: {removed}\n" +
-            $"Plain: {ToPlainString()}\n" +
+            $"Plain: {PlainText}\n" +
             $"Valid?: {IsValidRichText(ToString(), out _)}";
+      #endregion
     }
 
     /// <summary>
@@ -64,7 +68,7 @@ namespace TRIdle.Editor {
     /// </example>
     public static Difference GetRefinedOutput(string before, string after, int cursorIndex) {
       if (IsValidRichText(before, out _) is false) throw new ArgumentException("Invalid rich text", nameof(before));
-      var diff = FindDifference(before, after);
+      var diff = FindDifference(before.ToPlainString(), after.ToPlainString());
       return GetRefinedOutput(diff, cursorIndex);
     }
 
@@ -114,7 +118,8 @@ namespace TRIdle.Editor {
       }
     }
     public static Difference FindDifference(string before, string after) {
-      if (after.ToPlainString(false).Length == 0) return new() { removed = before };
+      if (after.Length == 0) return new() { removed = before };
+      if (before.Length == 0) return new() { added = after };
 
       int start, end;
       int min = Math.Min(before.Length, after.Length), max = Math.Max(before.Length, after.Length);
@@ -123,7 +128,7 @@ namespace TRIdle.Editor {
         if (before[start] != after[start])
           break;
       // Find the last difference
-      for (end = 1; end < max - start; end++)
+      for (end = 1; end < Math.Min(max - start, min); end++)
         if (before[^end] != after[^end])
           break;
       end--;
@@ -178,23 +183,20 @@ namespace TRIdle.Editor {
     /// <para>Check if the text is a valid rich text.</para>
     /// <para>All tags must be closed properly, and there should be no other tokens.</para>
     /// </summary>
-    static bool IsValidRichText(string text, out string plainText) {
-      plainText = GetPlainText(text);
-      return RegexPattern.AnyTag.IsMatch(plainText) is false;
+    static bool IsValidRichText(string text, out string plainText)
+      => RegexPattern.AnyTag.IsMatch(plainText = RemoveFullTag(text)) is false;
+
+    static string RemoveFullTag(string richText) {
+      while (RegexPattern.FullTag.TryReplace(richText, out richText, m => m.Groups[RegexName.TagBody].Value)) ;
+      return richText;
     }
-    public static string GetPlainText(string richText, bool removeValidTagsOnly = true) {
+
+    public static string GetPlainText(string richText) {
       if (richText is null) return string.Empty;
-      string result = richText;
-
-      if (removeValidTagsOnly)
-        // Remove all complete tags
-        while (RegexPattern.FullTag.TryReplace(result, out result, m => m.Groups[RegexName.TagBody].Value)) ;
-      else
-        // Remove all tags
-        while (RegexPattern.AnyTag.TryReplace(result, out result, "")) ;
-
-      return result;
+      while (RegexPattern.AnyTag.TryReplace(richText, out richText, "")) ;
+      return richText.RemoveTagTokens();
     }
+
     static int[] RichTextIndex(string rich) {
       if (IsValidRichText(rich, out var plain) is false) throw new ArgumentException("Invalid rich text", nameof(rich));
       int[] indexes = new int[plain.Length + 1];
@@ -210,8 +212,8 @@ namespace TRIdle.Editor {
   }
 
   public static class Ext {
-    public static string ToPlainString(this string richText, bool removeValidTagsOnly = true)
-      => RichTextUtility.GetPlainText(richText, removeValidTagsOnly);
+    public static string ToPlainString(this string richText)
+      => RichTextUtility.GetPlainText(richText);
     public static string RemoveTagTokens(this string text) => text.Replace("<", "").Replace(">", "");
     public static bool TryMatch(this Regex regex, string input, out Match match)
       => (match = regex.Match(input)).Success;
