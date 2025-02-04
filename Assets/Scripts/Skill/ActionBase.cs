@@ -5,6 +5,7 @@ using UnityEngine;
 namespace TRIdle.Game.Skill
 {
   using Knowledge;
+  using Math;
 
   #region Derived Attributes
   [JsonDerivedType(typeof(SB_WoodCutting.SA_WoodCutting), typeDiscriminator: "WoodCutting")]
@@ -34,7 +35,7 @@ namespace TRIdle.Game.Skill
 
     [JsonInclude] public Keyword[] RequiredKnowledge { get; protected set; }
 
-    [JsonInclude] public REFloat SkillProficiencyMultiplier { get; protected set; } = new(1);
+    [JsonInclude] public RFloat SkillProficiencyMultiplier { get; protected set; } = new(1);
     #endregion
 
     #region State Properties (Override Optional)

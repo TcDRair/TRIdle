@@ -4,6 +4,7 @@ using System.Text.Json.Serialization;
 namespace TRIdle.Game.Skill
 {
   using Knowledge;
+  using Math;
 
   //! Sample Skill
   public class SB_WoodCutting : SkillBase
@@ -33,14 +34,14 @@ namespace TRIdle.Game.Skill
 
     public record Stat : StatBase
     {
-      public REInt WoodRegenMax { get; set; } = new(100);
-      public REFloat WoodRegenRate { get; set; } = new(0.1f);
+      public RInt WoodRegenMax { get; set; } = new(100);
+      public RFloat WoodRegenRate { get; set; } = new(0.1f);
 
       public int[] WoodRankWeight { get; set; } = { 90, 9, 1, 0, 0 };
 
       // TODO : Spirit of the Forest
       public bool SpiritEnabled { get; set; } = false;
-      public REFloat SpiritFavor { get; set; } = new(0, -100, 100);
+      public RFloat SpiritFavor { get; set; } = new(0, -100, 100);
     }
     public Stat Stats { get; protected set; } = new();
 
@@ -90,9 +91,9 @@ namespace TRIdle.Game.Skill
 
       public record Modifier : ModifierBase
       {
-        public REFloat ExplorationMaxDuration { get; set; } = new(10);
-        public REFloat ExplorationMinDuration { get; set; } = new(1);
-        public REFloat StickGatheringAmount { get; set; } = new(2);
+        public RFloat ExplorationMaxDuration { get; set; } = new(10);
+        public RFloat ExplorationMinDuration { get; set; } = new(1);
+        public RFloat StickGatheringAmount { get; set; } = new(2);
       }
       [JsonInclude]
       public Modifier Modifiers { get; protected set; } = new();
