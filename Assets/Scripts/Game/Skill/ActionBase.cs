@@ -4,7 +4,6 @@ using UnityEngine;
 
 namespace TRIdle.Game.Skill
 {
-  using Knowledge;
   using Math;
 
   #region Derived Attributes
@@ -32,8 +31,6 @@ namespace TRIdle.Game.Skill
     [JsonInclude] public float DefaultDuration { get; protected set; } = 4;
     [JsonInclude] public bool Repeatable { get; protected set; } = true;
     [JsonInclude] public bool Pausable { get; protected set; } = false;
-
-    [JsonInclude] public Keyword[] RequiredKnowledge { get; protected set; }
 
     [JsonInclude] public RFloat SkillProficiencyMultiplier { get; protected set; } = new(1);
     #endregion

@@ -3,7 +3,6 @@ using System.Text.Json.Serialization;
 
 namespace TRIdle.Game.Skill
 {
-  using Knowledge;
   using Math;
 
   //! Sample Skill
@@ -65,10 +64,6 @@ namespace TRIdle.Game.Skill
         SkillProficiencyMultiplier.Base = 1;
         Repeatable = true;
         Pausable = true;
-
-        RequiredKnowledge = new Keyword[] {
-          Keyword.None,
-        };
       }
       private float m_explorationDuration;
       public override float Duration => m_explorationDuration + DefaultDuration;

@@ -5,5 +5,11 @@ root = true
 [*]
 charset = utf-8
 
+[*.{cs,vb}]
+
 # IDE0130: 네임스페이스가 폴더 구조와 일치하지 않습니다.
-dotnet_style_namespace_match_folder = false
+dotnet_diagnostic.IDE0130.severity = none
+
+[*.cs]
+# 조건문과 함수 정의 후에 줄바꿈 대신 공백을 권장 (하기 명시되지 않은 경우)
+csharp_new_line_before_open_brace = namespace, types

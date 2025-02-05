@@ -1,0 +1,4 @@
+{
+  "Action_WoodCutting_FindSticks_Name": "잔가지 탐색",
+  "Action_WoodCutting_FindSticks_Description": "주변에 떨어진 나뭇가지를 찾습니다.\n - 탐색 확률:\n   - 나뭇가지: {1}%\n    - 나뭇잎: {2}%\n    - 기타: {3}% \n - 탐색 시간: {4} ~ {5} 초"
+}

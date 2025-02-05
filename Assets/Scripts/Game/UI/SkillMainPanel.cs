@@ -87,8 +87,6 @@ namespace TRIdle.Game.Skill
         main.Proficiency.text = $"Proficiency : {currentSkill.Proficiency}";
         main.SkillDescription.text = currentSkill.Description;
         main.ActionDescription.text = (current == null) ? "" : current.Description;
-        main.ActionRequiredKeyword.text = (current == null) ? ""
-          : string.Join('\n', current.RequiredKnowledge.Select(x => x.GetKnowledgeInfo().ToString()));
       }
     }
 
