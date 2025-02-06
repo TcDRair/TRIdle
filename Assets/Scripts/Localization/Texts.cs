@@ -11,22 +11,23 @@ namespace TRIdle
   /// </summary>
   public record Text
   {
+    public Title Title { get; set; } = new();
     public Settings Settings { get; set; } = new();
-    public Menu Menu { get; set; } = new();
 
-    public static Text Current { get; private set; } = new();
+    public static Text Current { get; set; } = new();
   }
 
   namespace Texts
   {
     public record Settings
     {
+      public string Settings_Title { get; set; } = "설정";
       public string Settings_LanguageSelection { get; set; } = "언어";
     }
 
-    public record Menu
+    public record Title
     {
-      public string Menu_StartGameButton { get; set; } = "게임 시작";
+      public string Title_StartGameButton { get; set; } = "게임 시작";
     }
   }
 }

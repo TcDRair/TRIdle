@@ -19,7 +19,7 @@ namespace TRIdle.Game.Skill
     }
 
     void Update() {
-      if (initialized is false && Player.IsLoaded is true) Initialize(Player.Skill.All);
+      // if (initialized is false && PlayerOld.IsLoaded is true) Initialize(PlayerOld.Skill.All);
     }
 
     bool initialized = false;

@@ -9,11 +9,13 @@ using System.Collections.Generic;
 namespace TRIdle.Logics.Serialization
 {
   using Extensions;
+  using TRIdle.Texts;
 
   public class LocalizationLoader : LoaderBase
   {
     public static LocalizationLoader Instance { get; private set; }
-    void Awake() {
+    protected override void Awake() {
+      base.Awake();
       if (Instance != null) Destroy(Instance.gameObject); // Always keep the latest instance
       Instance = this;
     }
@@ -22,7 +24,7 @@ namespace TRIdle.Logics.Serialization
     public override IEnumerator Load() {
       this.Log($"Loading localization files...");
 
-      var path = Application.streamingAssetsPath + "/Localizations/";
+      var path = $"{FilePath}/Localizations/";
 
       // Load language list
       if (TryDeserialize(path + "lists.json", out languages) is false) {
@@ -30,32 +32,46 @@ namespace TRIdle.Logics.Serialization
         yield break;
       }
       // Check each language files
-      foreach (var (lang, name) in languages) {
-        // Try to load each language files
+      foreach (var (lang, name) in languages)
+        FindMissingFiles(lang);
+
+      // Load selected (or default) language
+      yield return LoadTexts("ko");
+
+      void FindMissingFiles(string lang) {
         var langPath = $"{path}/{lang}/";
-        foreach (var file in m_requiredFiles.Values)
+        foreach (var file in fileNames.Values)
           if (File.Exists(langPath + file) is false)
             this.Log($"The required file({file}) is not found for language({lang}). Some texts may not be displayed correctly.");
       }
-
-      // Load selected (or default) language
-      var selectedLang = PlayerPrefs.GetString("Language", "en");
-      if (languages.ContainsKey(selectedLang) is false) {
-        this.Log($"The selected language({selectedLang}) is not found. Default language(en) will be used.");
-        selectedLang = "en";
-      }
-      var slPath = $"{path}/{selectedLang}/";
-      if (TryDeserialize(slPath + m_requiredFiles["menu"], out Texts.Menu menu))
-        Text.Current.Menu = menu;
-      if (TryDeserialize(slPath + m_requiredFiles["settings"], out Texts.Settings settings))
-        Text.Current.Settings = settings;
-      // Add more files here
-      
     }
 
-    private readonly Dictionary<string, string> m_requiredFiles = new() {
-      { "menu", "menu.json" },
-      { "settings", "settings.json" },
+    public override IEnumerator Save() {
+      // Localization files are not supposed to be saved during runtime
+      yield break;
+    }
+
+    public IEnumerator LoadTexts(string lang) {
+      if (languages.ContainsKey(lang) is false) {
+        this.Log($"The selected language({lang}) is not found. Default language(en) will be used.");
+        lang = "en";
+      }
+
+      var path = $"{FilePath}/Localizations/{lang}/";
+      Text.Current = new() {
+        Title = Deserialize<Title>(path + fileNames[RFTypes.Title]) ?? new(),
+        Settings = Deserialize<Settings>(path + fileNames[RFTypes.Settings]) ?? new(),
+        // Add more files here
+      };
+      
+      yield return null;
+    }
+
+    private readonly Dictionary<RFTypes, string> fileNames = new() {
+      { RFTypes.Title, "title.json" },
+      { RFTypes.Settings, "settings.json" },
+      // And so on
     };
+    private enum RFTypes { Title, Settings, Menu, Skills, Actions, Items, Dialogues, Notifications, }
   }
 }

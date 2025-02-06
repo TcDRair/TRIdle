@@ -38,8 +38,8 @@ namespace TRIdle.Game.Skill
 
     #region State Properties (Override Optional)
     [JsonIgnore]
-    public virtual ProgressType Progress =>
-      Player.State.FocusSkill == this ? ProgressType.Focused : ProgressType.None;
+    public virtual ProgressType Progress => ProgressType.None;
+    //  PlayerOld.State.FocusSkill == this ? ProgressType.Focused : ProgressType.None;
     public enum ProgressType
     {
       /// <summary>Idle. Default state.</summary>

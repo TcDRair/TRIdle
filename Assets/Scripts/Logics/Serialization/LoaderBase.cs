@@ -1,6 +1,7 @@
 using System.IO;
 using System.Text.Json;
 using System.Collections;
+using System.Collections.Generic;
 
 using UnityEngine;
 
@@ -9,23 +10,31 @@ namespace TRIdle.Logics.Serialization
   public abstract class LoaderBase : MonoBehaviour
   {
     public abstract IEnumerator Load();
+    public abstract IEnumerator Save();
 
-    public static bool TryDeserialize<T>(string path, out T data) {
-      if (File.Exists(path) is false) {
-        data = default;
-        return false;
-      }
+    protected static List<LoaderBase> m_loaders = new();
+    /// <summary>반드시 <see langword="base.Awake()"/>를 호출해야 작동합니다.</summary>
+    protected virtual void Awake() => m_loaders.Add(this);
 
-      using var stream = new FileStream(path, FileMode.Open);
+    public static IEnumerator LoadAll() {
+      foreach (var l in m_loaders)
+        yield return l.Load();
+    }
+
+    protected string FilePath => Application.streamingAssetsPath;
+
+    public static T Deserialize<T>(string path) {
       try {
-        data = JsonSerializer.Deserialize<T>(stream, Const.JsonSerializerOption);
-        return true;
+        using var stream = new FileStream(path, FileMode.Open);
+        return JsonSerializer.Deserialize<T>(stream, Const.JsonSerializerOption);
       }
       catch {
-        data = default;
-        return false;
+        return default;
       }
     }
+    public static bool TryDeserialize<T>(string path, out T data)
+      => (data = Deserialize<T>(path)).Equals(default) is false;
+
     public static bool TrySerialize<T>(string path, T data) {
       if (Directory.Exists(Path.GetDirectoryName(path)) is false)
         Directory.CreateDirectory(Path.GetDirectoryName(path));
