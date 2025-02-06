@@ -7,19 +7,10 @@ using UnityEngine;
 
 namespace TRIdle.Logics.Serialization
 {
-  public abstract class LoaderBase : MonoBehaviour
+  public abstract class LoaderBase
   {
     public abstract IEnumerator Load();
     public abstract IEnumerator Save();
-
-    protected static List<LoaderBase> m_loaders = new();
-    /// <summary>반드시 <see langword="base.Awake()"/>를 호출해야 작동합니다.</summary>
-    protected virtual void Awake() => m_loaders.Add(this);
-
-    public static IEnumerator LoadAll() {
-      foreach (var l in m_loaders)
-        yield return l.Load();
-    }
 
     protected string FilePath => Application.streamingAssetsPath;
 
@@ -28,12 +19,10 @@ namespace TRIdle.Logics.Serialization
         using var stream = new FileStream(path, FileMode.Open);
         return JsonSerializer.Deserialize<T>(stream, Const.JsonSerializerOption);
       }
-      catch {
-        return default;
-      }
+      catch { return default; }
     }
     public static bool TryDeserialize<T>(string path, out T data)
-      => (data = Deserialize<T>(path)).Equals(default) is false;
+      => (data = Deserialize<T>(path)) is not null;
 
     public static bool TrySerialize<T>(string path, T data) {
       if (Directory.Exists(Path.GetDirectoryName(path)) is false)
@@ -44,9 +33,7 @@ namespace TRIdle.Logics.Serialization
         JsonSerializer.Serialize(stream, data, Const.JsonSerializerOption);
         return true;
       }
-      catch {
-        return false;
-      }
+      catch { return false; }
     }
   }
 }

@@ -13,12 +13,8 @@ namespace TRIdle.Logics.Serialization
 
   public class LocalizationLoader : LoaderBase
   {
-    public static LocalizationLoader Instance { get; private set; }
-    protected override void Awake() {
-      base.Awake();
-      if (Instance != null) Destroy(Instance.gameObject); // Always keep the latest instance
-      Instance = this;
-    }
+    static LocalizationLoader m_instance;
+    public static LocalizationLoader Instance => m_instance ??= new();
 
     private Dictionary<string, string> languages;
     public override IEnumerator Load() {
@@ -54,7 +50,7 @@ namespace TRIdle.Logics.Serialization
     public IEnumerator LoadTexts(string lang) {
       if (languages.ContainsKey(lang) is false) {
         this.Log($"The selected language({lang}) is not found. Default language(en) will be used.");
-        lang = "en";
+        lang = "ko";
       }
 
       var path = $"{FilePath}/Localizations/{lang}/";

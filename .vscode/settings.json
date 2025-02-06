@@ -1,3 +1,11 @@
 {
-    "dotnet.preferCSharpExtension": true
+    "dotnet.preferCSharpExtension": true,
+    "explorer.excludeGitIgnore": true,
+    "files.exclude": {
+        "**/*.config": true,
+        "**/*.meta": true,
+        "Packages/": true,
+        "ProjectSettings/": true
+    },
+    "dotnet.defaultSolution": "TRIdle.sln"
 }

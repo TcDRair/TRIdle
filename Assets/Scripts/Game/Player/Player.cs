@@ -15,12 +15,8 @@ namespace TRIdle.Game
 
   public class Player : LoaderBase
   {
-    public static Player Instance { get; private set; }
-    protected override void Awake() {
-      base.Awake();
-      if (Instance != null) Destroy(Instance.gameObject); // Always keep the latest instance
-      Instance = this;
-    }
+    static Player m_instance;
+    public static Player Instance => m_instance ??= new();
 
     public PlayerData Data { get; private set; }
     public override IEnumerator Load() {

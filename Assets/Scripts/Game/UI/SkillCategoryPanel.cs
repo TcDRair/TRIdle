@@ -22,7 +22,7 @@ namespace TRIdle.Game.Skill
       // if (initialized is false && PlayerOld.IsLoaded is true) Initialize(PlayerOld.Skill.All);
     }
 
-    bool initialized = false;
+    // bool initialized = false;
     public void Initialize(IEnumerable<SkillBase> skills) {// TODO : Fetch SkillCategory data
       foreach (var skill in skills) {
         var ui = Instantiate(SkillUIPanel, Content).GetComponent<SkillUI>();
@@ -30,7 +30,7 @@ namespace TRIdle.Game.Skill
         // Need to save reference?
       }
       
-      initialized = true;
+      // initialized = true;
     }
   }
 }
