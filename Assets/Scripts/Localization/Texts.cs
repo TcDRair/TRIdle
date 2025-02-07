@@ -13,21 +13,27 @@ namespace TRIdle
   {
     public Title Title { get; set; } = new();
     public Settings Settings { get; set; } = new();
+    public Skill Skill { get; set; } = new();
 
     public static Text Current { get; set; } = new();
   }
 
   namespace Texts
   {
+    public record Title
+    {
+      public string Title_StartGameButton { get; set; } = "게임 시작";
+    }
+
     public record Settings
     {
       public string Settings_Title { get; set; } = "설정";
       public string Settings_LanguageSelection { get; set; } = "언어";
     }
 
-    public record Title
+    public record Skill
     {
-      public string Title_StartGameButton { get; set; } = "게임 시작";
+      public string Skill_Wildcrafting_Name { get; set; } = "생존 기술";
     }
   }
 }

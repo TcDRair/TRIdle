@@ -73,7 +73,7 @@ namespace TRIdle.Game.Skill
       main.ButtonPanel.DestroyAllChildren();
       foreach (var a in skill.Actions)
       {
-        a.Callbacks.OnStart += () => ChangeCurrentAction(a);
+        // a.Callbacks.OnStart += () => ChangeCurrentAction(a);
         var b = Instantiate(main.ActionButton, main.ButtonPanel).GetComponent<ActionButton>();
         b.Action = a;
       }
@@ -86,14 +86,14 @@ namespace TRIdle.Game.Skill
       {
         main.Proficiency.text = $"Proficiency : {currentSkill.Proficiency}";
         main.SkillDescription.text = currentSkill.Description;
-        main.ActionDescription.text = (current == null) ? "" : current.Description;
+        // main.ActionDescription.text = (current == null) ? "" : current.Description;
       }
     }
 
     void ChangeCurrentAction(ActionBase action)
     {
       if (action == current) return;
-      current?.Callbacks.End();
+      // current?.Callbacks.End();
       current = action;
     }
   }

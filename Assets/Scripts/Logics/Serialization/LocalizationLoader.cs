@@ -16,7 +16,9 @@ namespace TRIdle.Logics.Serialization
     static LocalizationLoader m_instance;
     public static LocalizationLoader Instance => m_instance ??= new();
 
+    private readonly string[] files = { "title.json", "settings.json" };
     private Dictionary<string, string> languages;
+    
     public override IEnumerator Load() {
       this.Log($"Loading localization files...");
 
@@ -36,15 +38,10 @@ namespace TRIdle.Logics.Serialization
 
       void FindMissingFiles(string lang) {
         var langPath = $"{path}/{lang}/";
-        foreach (var file in fileNames.Values)
+        foreach (var file in files)
           if (File.Exists(langPath + file) is false)
             this.Log($"The required file({file}) is not found for language({lang}). Some texts may not be displayed correctly.");
       }
-    }
-
-    public override IEnumerator Save() {
-      // Localization files are not supposed to be saved during runtime
-      yield break;
     }
 
     public IEnumerator LoadTexts(string lang) {
@@ -55,19 +52,17 @@ namespace TRIdle.Logics.Serialization
 
       var path = $"{FilePath}/Localizations/{lang}/";
       Text.Current = new() {
-        Title = Deserialize<Title>(path + fileNames[RFTypes.Title]) ?? new(),
-        Settings = Deserialize<Settings>(path + fileNames[RFTypes.Settings]) ?? new(),
+        Title = Deserialize<Title>(path + files[0]) ?? new(),
+        Settings = Deserialize<Settings>(path + files[1]) ?? new(),
         // Add more files here
       };
       
       yield return null;
     }
 
-    private readonly Dictionary<RFTypes, string> fileNames = new() {
-      { RFTypes.Title, "title.json" },
-      { RFTypes.Settings, "settings.json" },
-      // And so on
-    };
-    private enum RFTypes { Title, Settings, Menu, Skills, Actions, Items, Dialogues, Notifications, }
+    public override IEnumerator Save() {
+      // Localization files are not supposed to be saved during runtime
+      yield break;
+    }
   }
 }

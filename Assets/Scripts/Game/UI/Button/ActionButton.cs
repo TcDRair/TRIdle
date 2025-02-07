@@ -25,14 +25,14 @@ namespace TRIdle.Game
     public ActionBase Action { get; set; }
 
     #region Indicator
-    public float Progress => Action.CurrentProgress / Action.Duration;
+    public float Progress => 0; // Action.CurrentProgress / Action.Duration;
     #endregion
 
     #region Control Methods
     public void Toggle() // Assigned to Button.onClick
     {
-      if (Action.IsPerforming) Action.Callbacks.End();
-      else Action.Callbacks.Start();
+      // if (Action.IsPerforming) Action.Callbacks.End();
+      // else Action.Callbacks.Start();
     }
     #endregion
 
@@ -50,26 +50,25 @@ namespace TRIdle.Game
     {
       if (Performable is false) return;
 
-      if (Action.IsPerforming) Action.Callbacks.Progress(Time.deltaTime);
+      // if (Action.IsPerforming) Action.Callbacks.Progress(Time.deltaTime);
     }
     void Invoke_Callbacks()
     {
       if (Progress >= 1) {
-        Action.Callbacks.Perform();
+        // Action.Callbacks.Perform();
       }
     }
     void Update_Display()
     {
-      button.interactable = Action.CanPerform;
+      // button.interactable = Action.CanPerform;
       label.text = Action.Name;
-      stack.text = Action.StackInfo;
+      // stack.text = Action.StackInfo;
       progress.fillAmount = Progress;
     }
     #endregion
 
     #region Internal Utility
-    bool Performable => Action is not null && Action.CanPerform;
-    bool Repetable => Performable && Action.Repeatable;
+    bool Performable => Action is not null; // && Action.CanPerform;
     #endregion
   }
 }

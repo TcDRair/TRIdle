@@ -1,128 +1,42 @@
 using System;
-using System.Text.Json.Serialization;
 using UnityEngine;
 
 namespace TRIdle.Game.Skill
 {
   using Math;
 
-  #region Derived Attributes
-  [JsonDerivedType(typeof(SB_WoodCutting.SA_WoodCutting), typeDiscriminator: "WoodCutting")]
-  [JsonDerivedType(typeof(SB_WoodCutting.SA_StickGathering), typeDiscriminator: "StickGathering")]
-  #endregion
   public abstract class ActionBase
   {
-    public ActionBase()
-    {
-      Callbacks = new ActionEvents(DefaultCallbacks, CustomCallbacks);
-    }
+    public string ID { get; } // ID는 각 액션의 고유 식별자로 사용됨
+    public abstract string Name { get; } // Link to Text.Current
 
-    #region Fixed Properties (Override Required)
-    [JsonIgnore]
-    public abstract string Name { get; }
-    [JsonIgnore]
-    public abstract string Description { get; }
-    [JsonIgnore]
-    /// <summary>Duration of the action in seconds</summary>
-    public virtual float Duration => DefaultDuration;
-    #endregion
+    protected Texts.Skill Texts => Text.Current.Skill;
 
-    #region Serialized Properties (Re-assignable in Constructor)
-    [JsonInclude] public float DefaultDuration { get; protected set; } = 4;
-    [JsonInclude] public bool Repeatable { get; protected set; } = true;
-    [JsonInclude] public bool Pausable { get; protected set; } = false;
+    public int Exp;
 
-    [JsonInclude] public RFloat SkillProficiencyMultiplier { get; protected set; } = new(1);
-    #endregion
+    public abstract void Press();
+    public abstract void Execute();
 
-    #region State Properties (Override Optional)
-    public virtual bool CanPerform => true;
-    public virtual string StackInfo => "";
-
-    /// <summary>
-    /// Derive this to provide additional information for the action.<br/>
-    /// Strongly recommended to name the derived record as <see langword="Modifier"/>.
-    /// </summary>
-    public abstract record ModifierBase;
-    #endregion
-
-    #region Event Callbacks 
-    public ActionEvents Callbacks { get; }
-
-    [JsonIgnore] protected virtual ActionCallbacks CustomCallbacks => new();
-    [JsonIgnore] private ActionCallbacks DefaultCallbacks => new()
-    {
-      OnStart = () => IsPerforming = true,
-      OnProgress = deltaTime => CurrentProgress += deltaTime,
-      OnPerform = () =>
-      {
-        Skill.Proficiency += Skill.ProficiencyBase * SkillProficiencyMultiplier.Value;
-        CurrentProgress = 0;
-        if (Repeatable) Callbacks.Repeat();
-        else Callbacks.End();
-      },
-      OnRepeat = () => CurrentProgress = 0,
-      OnPause = () => CurrentProgress = Pausable ? CurrentProgress : 0,
-      OnEnd = () => IsPerforming = false
-    };
-    #endregion
-
-    #region Runtime Reference
-    [JsonInclude] public float CurrentProgress { get; set; }
-
-
-    public void SetupReference(SkillBase skill) => Skill = skill;
-    [JsonIgnore] public SkillBase Skill { get; private set; }
-    [JsonIgnore] public ActionButton Button { get; private set; }
-    [JsonIgnore] public bool IsPerforming { get; private set; }
-    #endregion
+    // 추상 클래스에서 정의되는 것
+    //  - ID : 아래 항목들과 연결시키기 위한 것
+    //  - Name : 언어 설정에 따라 로드된 텍스트를 Text.Current를 통해 레퍼런스할 것
+    //  - Exp : 모든 액션은 개별 경험치(숙련도)를 가짐
+    //  - Press : 액션 버튼을 눌렀을 때 호출되는 메소드. 입력 시의 즉각적인 로직
+    //  - Execute : 액션 실행 시 호출되는 메소드. 액션을 한 번 완료했을 때의 로직
+    // 따로 빼서 정의해야 하는 것
+    //  - 각종 string => Text : 각 언어별로 로드되어 있음.
+    //    Name과 같이 상속받은 액션에서 정의한 후 Text.Current에서 레퍼런스할 것
+    //  - UI => ActionPanel : 최소한의 공통 요소를 제외한 UI는 각자 정의해야 함
+    //    각 스킬마다 고유한 UI가 많을 수 있어 ActionPanel 등의 클래스를 따로 만드는 것을 권장함
+    //    초기 단계에서는 해당 Panel에 텍스트 위주로 구성해보자.
+    //  - Data : 저장되어야 하는 데이터는 Text와 같이 일괄적으로 저장되어 있음. (레퍼런스 필요)
+    // 상속받은 액션에서 알아서 정의해야 하는 것
+    //  - Delay/Cooldown 등 : 액션의 특성에 따라 정의해야 함
+    //    기본적인 진행 요소는 Player에서 정의되어 있음 (ex: DoActionDelay(), DoActionCooldown())
+    //  - UI : 액션에 따라 UI가 다르므로 상속받은 액션에서 정의해야 함
+    //    여기에 쓰긴 했지만 ActionPanel 등의 클래스를 따로 만드는 것을 권장함
+    // ...좋았어 벌목(관측 + 탐사 + 채집 + 액션 + 복귀) 스킬에서 프로토타입을 만들어 보자.
   }
 
-  #region Callback Definitions
-  public delegate void ActionCallback();
-  public delegate void ProgressCallback(float deltaTime);
-  /// <summary>Stores event callbacks for <see cref="ActionBase"/> Instances.</summary>
-  public class ActionEvents
-  {
-    public event ActionCallback OnStart;
-    public void Start() => OnStart?.Invoke();
-    public event ProgressCallback OnProgress;
-    public void Progress(float deltaTime) => OnProgress?.Invoke(deltaTime);
-    public event ActionCallback OnPerform;
-    public void Perform() => OnPerform?.Invoke();
-    public event ActionCallback OnRepeat;
-    public void Repeat() => OnRepeat?.Invoke();
-    public event ActionCallback OnPause;
-    public void Pause() => OnPause?.Invoke();
-    public event ActionCallback OnEnd;
-    public void End() => OnEnd?.Invoke();
-
-    /// <summary>Create a new instance without any callbacks.</summary>
-    public ActionEvents() { }
-    /// <summary>Create a new instance with predefined callbacks.</summary>
-    public ActionEvents(params ActionCallbacks[] delegates)
-    {
-      foreach (var d in delegates)
-      {
-        OnStart += d.OnStart;
-        OnProgress += d.OnProgress;
-        OnPerform += d.OnPerform;
-        OnRepeat += d.OnRepeat;
-        OnPause += d.OnPause;
-        OnEnd += d.OnEnd;
-      }
-    }
-  }
-
-  /// <summary>Stores a set of predefined callbacks for <see cref="ActionBase"/> instances.</summary>
-  public class ActionCallbacks
-  {
-    public ActionCallback OnStart { get; set; } = () => { };
-    public ProgressCallback OnProgress { get; set; } = _ => { };
-    public ActionCallback OnPerform { get; set; } = () => { };
-    public ActionCallback OnRepeat { get; set; } = () => { };
-    public ActionCallback OnPause { get; set; } = () => { };
-    public ActionCallback OnEnd { get; set; } = () => { };
-  }
-  #endregion
+  
 }
