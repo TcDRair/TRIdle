@@ -1,14 +1,10 @@
-using System;
-using System.IO;
-using System.Linq;
-using System.Text.Json;
 using System.Collections;
 
 using UnityEngine;
 
 namespace TRIdle.Game
 {
-  using Skill;
+  using PlayerInternal;
 
   using Logics.Extensions;
   using Logics.Serialization;
@@ -32,6 +28,24 @@ namespace TRIdle.Game
         yield break;
       this.Log($"Failed to save player data.");
     }
+  
+    #region Skill Actions
+    PlayerMono m_mono;
+    PlayerMono Mono {
+      get {
+        if (m_mono == null) {
+          m_mono = new GameObject("PlayerMono").AddComponent<PlayerMono>();
+          Object.DontDestroyOnLoad(m_mono.gameObject);
+        }
+        return m_mono;
+      }
+    }
+    
+    public void DoActionDelay(float delay, System.Action action)
+      => Mono.StartDelay(delay, action);
+    public void DoActionCooldown(float cooldown, System.Action action)
+      => Mono.StartCooldown(cooldown, action);
+    #endregion
   }
 
   public record PlayerData

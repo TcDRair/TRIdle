@@ -295,7 +295,6 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 1f3789a8bb804d042b4ba7cd90ce2bc5, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  Content: {fileID: 1655629745}
   SkillUIPanel: {fileID: 2275684528275610952, guid: 75ff8729c86fc494988bf11397b559a1, type: 3}
 --- !u!1 &216145506
 GameObject:
@@ -2837,17 +2836,12 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 8141239e11a943146ae9e8c45ef988ae, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  title:
-    Label: {fileID: 1448454460}
-    Icon: {fileID: 2065381360}
-    DetailButton: {fileID: 1827128321}
-  main:
-    ButtonPanel: {fileID: 1254850985}
-    ActionButton: {fileID: 2358532957768974060, guid: f38adec42c7a3434eb807389a2123275, type: 3}
-    Proficiency: {fileID: 1650203532}
-    SkillDescription: {fileID: 1541132296}
-    ActionDescription: {fileID: 216145508}
-    ActionRequiredKeyword: {fileID: 842581273}
+  Components:
+    Name: {fileID: 0}
+    Level: {fileID: 0}
+    Description: {fileID: 0}
+    Icon: {fileID: 0}
+    Button: {fileID: 0}
 --- !u!114 &1811361026
 MonoBehaviour:
   m_ObjectHideFlags: 0

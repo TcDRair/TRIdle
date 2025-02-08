@@ -1,9 +1,8 @@
-using System;
-using UnityEngine;
+
 
 namespace TRIdle.Game.Skill
 {
-  using Math;
+  using Logics.Extensions;
 
   public abstract class ActionBase
   {
@@ -38,5 +37,17 @@ namespace TRIdle.Game.Skill
     // ...좋았어 벌목(관측 + 탐사 + 채집 + 액션 + 복귀) 스킬에서 프로토타입을 만들어 보자.
   }
 
-  
+  public class Action_WildCrafting_Search : ActionBase
+  {
+    public override string Name => Texts.Action_Wildcrafting_Search_Name;
+
+    public override void Press()
+      => Player.Instance.DoActionDelay(1f, Execute);
+
+    public override void Execute()
+    {
+      // 여기에 탐색 액션의 로직을 작성하자.
+      this.Log($"Wildcrafting Search Action Executed.");
+    }
+  }
 }

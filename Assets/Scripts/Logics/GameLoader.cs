@@ -4,11 +4,11 @@ using UnityEngine;
 
 namespace TRIdle.Logics
 {
+  using Game;
+  using Extensions;
   using Serialization;
-  using TRIdle.Game;
-    using TRIdle.Logics.Extensions;
 
-    public class GameLoader : MonoBehaviour
+  public class GameLoader : MonoBehaviour
   {
     public static GameLoader Instance { get; private set; }
     public GameLoader() { Instance = this; }

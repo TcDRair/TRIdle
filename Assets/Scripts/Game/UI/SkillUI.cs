@@ -4,8 +4,10 @@ using UnityEngine.UI;
 using TMPro;
 using System;
 
-namespace TRIdle.Game.Skill
+namespace TRIdle.Game.UI
 {
+  using Skill;
+
   public class SkillUI : MonoBehaviour
   {
     [Serializable]
@@ -37,13 +39,7 @@ namespace TRIdle.Game.Skill
     }
 
     void Update() {
-      if (Skill != null) {
-        Category.Name.text = Skill.Name;
-        Category.Level.text = $"[{Skill.Level} / {Skill.MaxLevel}]";
-        Category.Icon.sprite = Skill.Progress switch {
-          _ => Skill.Icon
-        };
-      }
+
     }
   }
 }

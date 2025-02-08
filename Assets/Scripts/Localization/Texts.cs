@@ -34,6 +34,7 @@ namespace TRIdle
     public record Skill
     {
       public string Skill_Wildcrafting_Name { get; set; } = "생존 기술";
+      public string Action_Wildcrafting_Search_Name { get; set; } = "탐색";
     }
   }
 }
