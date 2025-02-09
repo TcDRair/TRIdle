@@ -1,5 +1,3 @@
-
-
 namespace TRIdle.Game.Skill
 {
   using Logics.Extensions;

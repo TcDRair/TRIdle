@@ -574,7 +574,7 @@ GameObject:
   - component: {fileID: 236531126}
   - component: {fileID: 236531125}
   m_Layer: 5
-  m_Name: Skill Title
+  m_Name: Skill Title Area
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -708,7 +708,7 @@ GameObject:
   - component: {fileID: 426987770}
   - component: {fileID: 426987769}
   m_Layer: 5
-  m_Name: Skill Area
+  m_Name: Content
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -1812,8 +1812,8 @@ MonoBehaviour:
   m_TargetGraphic: {fileID: 41562039}
   m_HandleRect: {fileID: 41562038}
   m_Direction: 2
-  m_Value: 0
-  m_Size: 0.99999994
+  m_Value: 1
+  m_Size: 1
   m_NumberOfSteps: 0
   m_OnValueChanged:
     m_PersistentCalls:
@@ -1976,7 +1976,7 @@ GameObject:
   - component: {fileID: 1254850989}
   - component: {fileID: 1254850990}
   m_Layer: 5
-  m_Name: Action Area
+  m_Name: Action List
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -2251,7 +2251,7 @@ GameObject:
   - component: {fileID: 1448454460}
   - component: {fileID: 1448454459}
   m_Layer: 5
-  m_Name: Label
+  m_Name: Name
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -2772,7 +2772,7 @@ GameObject:
   - component: {fileID: 1811361025}
   - component: {fileID: 1811361026}
   m_Layer: 5
-  m_Name: Main Skill Panel
+  m_Name: Skill Main Area
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -2837,11 +2837,11 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   Components:
-    Name: {fileID: 0}
+    Name: {fileID: 1448454460}
     Level: {fileID: 0}
-    Description: {fileID: 0}
-    Icon: {fileID: 0}
-    Button: {fileID: 0}
+    Description: {fileID: 1541132296}
+    Icon: {fileID: 2065381360}
+    Button: {fileID: 1827128321}
 --- !u!114 &1811361026
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -2885,7 +2885,7 @@ GameObject:
   - component: {fileID: 1827128322}
   - component: {fileID: 1827128321}
   m_Layer: 5
-  m_Name: Button
+  m_Name: Detail Button
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0

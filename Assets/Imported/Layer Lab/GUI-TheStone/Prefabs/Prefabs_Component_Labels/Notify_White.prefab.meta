@@ -5,3 +5,10 @@ PrefabImporter:
   userData: 
   assetBundleName: 
   assetBundleVariant: 
+AssetOrigin:
+  serializedVersion: 1
+  productId: 116852
+  packageName: GUI - The Stone
+  packageVersion: 2.2.1
+  assetPath: Assets/Imported/Layer Lab/GUI-TheStone/Prefabs/Prefabs_Component_Labels/Notify_White.prefab
+  uploadId: 714418

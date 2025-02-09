@@ -7,8 +7,8 @@ using TMPro;
 
 namespace TRIdle.Game.Skill
 {
-  using Logics.Extensions;
-  using TRIdle.Game.UI;
+  using UI;
+  using Skill;
 
   public class SkillMainPanel : UIPanelSingleton<SkillMainPanel>
   {
@@ -18,8 +18,8 @@ namespace TRIdle.Game.Skill
     public SkillBase FocusedSkill { get; private set; }
     public ActionBase FocusedAction { get; private set; }
 
-    void Update() {
-
+    void Start() {
+      DrawSkill(Skills.Wildcrafting);
     }
 
     public void ToggleDetailButton() {
@@ -27,7 +27,12 @@ namespace TRIdle.Game.Skill
     }
 
     public void DrawSkill(SkillBase skill) {
+      FocusedSkill = skill;
 
+      Components.Name.text = skill.Name;
+      // Components.Level.text = $"Level {skill.Level}";
+      // Components.Description.text = skill..Description;
+      // Components.Icon.sprite = skill.Icon;
     }
 
     [Serializable]

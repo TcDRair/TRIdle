@@ -1,11 +1,3 @@
-using System;
-using System.Linq;
-using System.Text.Json.Serialization;
-using System.Collections;
-using System.Collections.Generic;
-
-using UnityEngine;
-
 namespace TRIdle.Game.Skill
 {
   public abstract class SkillBase
@@ -14,11 +6,16 @@ namespace TRIdle.Game.Skill
     public abstract string Name { get; } // Link to Text.Current
 
     public int Exp;
+  }
+  public abstract class SkillBase<T> : SkillBase where T : SkillBase<T>, new()
+  {
+    private static T m_instance;
+    public static T Instance => m_instance ??= new();
 
-
+    protected SkillBase() { } // Prevent external instantiation of this class
   }
 
-  public sealed class Wildcrafting : SkillBase
+  public sealed class Wildcrafting : SkillBase<Wildcrafting>
   {
     public override string ID => "wildcrafting";
     public override string Name => Text.Current.Skill.Skill_Wildcrafting_Name;

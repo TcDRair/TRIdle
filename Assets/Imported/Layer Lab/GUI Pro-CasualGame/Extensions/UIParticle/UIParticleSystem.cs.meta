@@ -9,3 +9,10 @@ MonoImporter:
   userData: 
   assetBundleName: 
   assetBundleVariant: 
+AssetOrigin:
+  serializedVersion: 1
+  productId: 176695
+  packageName: GUI Pro - Casual Game
+  packageVersion: 4.0.7
+  assetPath: Assets/Imported/Layer Lab/GUI Pro-CasualGame/Extensions/UIParticle/UIParticleSystem.cs
+  uploadId: 720804

@@ -33,13 +33,8 @@ namespace TRIdle.Game.UI
       Skill = skill;
 
       //TODO Init
-      Category.Button.onClick.AddListener(() => SkillMainPanel.Panel.DrawSkill(Skill));
-
-      Update(); // Invoke also at first frame
+      Category.Button.onClick.AddListener(() => SkillMainPanel.Instance.DrawSkill(Skill));
     }
 
-    void Update() {
-
-    }
   }
 }
