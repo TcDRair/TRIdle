@@ -10,7 +10,7 @@ MonoBehaviour:
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: fa203bb15a883dd459c704c27b9170a8, type: 3}
-  m_Name: ProgressButton_Ref
+  m_Name: ActionButton_Ref
   m_EditorClassIdentifier: 
   icon:
     ActionCompleted: {fileID: 21300000, guid: 69fe394513a9f445e90f477f9ca10259, type: 3}
