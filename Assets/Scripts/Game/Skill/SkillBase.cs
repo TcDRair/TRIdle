@@ -1,3 +1,5 @@
+using System.Collections.Generic;
+
 namespace TRIdle.Game.Skill
 {
   public abstract class SkillBase
@@ -6,6 +8,8 @@ namespace TRIdle.Game.Skill
     public abstract string Name { get; } // Link to Text.Current
 
     public int Exp;
+
+    public abstract IEnumerable<ActionBase> Actions { get; }
   }
   public abstract class SkillBase<T> : SkillBase where T : SkillBase<T>, new()
   {
@@ -19,5 +23,9 @@ namespace TRIdle.Game.Skill
   {
     public override string ID => "wildcrafting";
     public override string Name => Text.Current.Skill.Skill_Wildcrafting_Name;
+
+    public override IEnumerable<ActionBase> Actions => new ActionBase[] {
+      Action_WildCrafting_Search.Instance
+    };
   }
 }

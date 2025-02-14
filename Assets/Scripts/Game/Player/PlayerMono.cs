@@ -1,45 +1,59 @@
+using System;
 using System.Collections;
 
 using UnityEngine;
 
 namespace TRIdle.Game.PlayerInternal
 {
+  using Skill;
+  using TRIdle.Game.UI;
+
+  /// <summary>
+  /// PlayerMono is a MonoBehaviour that provides delay and cooldown functionalities.
+  /// Controls time-based actions with coroutines.
+  /// </summary>
   public class PlayerMono : MonoBehaviour
   {
-    public float DelayDuration, DelayRemaining;
-    public float CooldownDuration, CooldownRemaining;
-    public Coroutine DelayCoroutine, CooldownCoroutine;
+    private PlayerData Data => Player.Instance.Data;
 
-    public void StartDelay(float delay, System.Action action) {
-      if (DelayCoroutine is not null)
-        StopCoroutine(DelayCoroutine);
-      DelayDuration = delay;
-      DelayCoroutine = StartCoroutine(Delay(action));
+    public float DelayDuration, DelayElapsed;
 
-      IEnumerator Delay(System.Action action) {
-        DelayRemaining = DelayDuration;
-        while (DelayRemaining > 0) {
-          DelayRemaining -= Time.deltaTime;
-          yield return null;
-        }
-        action?.Invoke();
+    private ActionBase m_delayingAction;
+    private Coroutine m_delayCoroutine;
+
+    public void StartActionDelay(ActionBase action) {
+      // same action : ignore
+      if (action == m_delayingAction) return;
+      // other action : stop current action (delay)
+      if (m_delayCoroutine is not null) {
+        StopCoroutine(m_delayCoroutine);
+        if (m_delayingAction is not null) m_delayingAction.Progress = 0;
       }
+      // null action : update and ignore
+      if (action is null) { m_delayingAction = null; return; }
+
+      m_delayingAction = action;
+      m_delayCoroutine = StartCoroutine(DelayLoop());
     }
 
-    public void StartCooldown(float cooldown, System.Action action) {
-      if (CooldownCoroutine is not null)
-        StopCoroutine(CooldownCoroutine);
-      CooldownDuration = cooldown;
-      CooldownCoroutine = StartCoroutine(Cooldown(action));
+    IEnumerator DelayLoop() {
+      while (m_delayingAction is not null)
+        yield return Delay();
+    }
 
-      IEnumerator Cooldown(System.Action action) {
-        CooldownRemaining = CooldownDuration;
-        while (CooldownRemaining > 0) {
-          CooldownRemaining -= Time.deltaTime;
-          yield return null;
-        }
-        action?.Invoke();
+    IEnumerator Delay() {
+      DelayElapsed = 0;
+      DelayDuration = m_delayingAction.Delay;
+
+      while (DelayElapsed < DelayDuration) {
+        DelayElapsed += Time.deltaTime;
+        m_delayingAction.Progress = DelayElapsed / DelayDuration;
+        yield return null;
       }
+
+      m_delayingAction.Activate();
+      m_delayingAction.Progress = DelayElapsed = 0;
+      UI_MainSceneController.Instance.UpdateElements(); // Update UI
     }
   }
 }

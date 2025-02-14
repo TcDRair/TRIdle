@@ -35,6 +35,8 @@ namespace TRIdle
     {
       public string Skill_Wildcrafting_Name { get; set; } = "생존 기술";
       public string Action_Wildcrafting_Search_Name { get; set; } = "탐색";
+      public string Action_Wildcrafting_Search_DescriptionInfo { get; set; } = "주변 환경을 탐색하여 정보를 얻습니다. 다양한 자원, 식생, 위협 요소 등을 발견할 수 있습니다.";
+      public string Action_Wildcrafting_Search_DetailedInfo { get; set; } = "신규 자원 발견 확률: {0}%\n신규 식생 발견 확률: {1}%\n위협 요소 발견 확률: {2}%";
     }
   }
 }

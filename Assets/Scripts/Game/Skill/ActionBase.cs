@@ -2,17 +2,29 @@ namespace TRIdle.Game.Skill
 {
   using Logics.Extensions;
 
-  public abstract class ActionBase
+    public abstract class ActionBase
   {
     public string ID { get; } // ID는 각 액션의 고유 식별자로 사용됨
     public abstract string Name { get; } // Link to Text.Current
+    public abstract string DescriptionInfo { get; } // Link to Text.Current
+    public abstract string DetailedInfo { get; } // Link to Text.Current
 
     protected Texts.Skill Texts => Text.Current.Skill;
 
+    #region Serialized Data
     public int Exp;
+    public float Progress;
+    #endregion
 
-    public abstract void Press();
-    public abstract void Execute();
+    public abstract float Delay { get; }
+
+    public void Activate() {
+      OnActivated();
+      Progress -= 1;
+    }
+
+    /// <summary>구현 시 코루틴 관련 메서드를 호출하지 말 것</summary>
+    protected abstract void OnActivated();
 
     // 추상 클래스에서 정의되는 것
     //  - ID : 아래 항목들과 연결시키기 위한 것
@@ -35,17 +47,26 @@ namespace TRIdle.Game.Skill
     // ...좋았어 벌목(관측 + 탐사 + 채집 + 액션 + 복귀) 스킬에서 프로토타입을 만들어 보자.
   }
 
-  public class Action_WildCrafting_Search : ActionBase
+  public abstract class ActionBase<T> : ActionBase where T : ActionBase<T>, new()
+  {
+    private static T m_instance;
+    public static T Instance => m_instance ??= new();
+
+    protected ActionBase() { } // Prevent external instantiation of this class
+  }
+
+  public class Action_WildCrafting_Search : ActionBase<Action_WildCrafting_Search>
   {
     public override string Name => Texts.Action_Wildcrafting_Search_Name;
+    public override float Delay => 1.0f;
+    public override string DescriptionInfo => Texts.Action_Wildcrafting_Search_DescriptionInfo;
+    public override string DetailedInfo => string.Format(Texts.Action_Wildcrafting_Search_DetailedInfo, 10 * Fx, 20 * Fx, 30 * Fx);
+    private float Fx => UnityEngine.Mathf.Log10(Exp + 1) + 1;
 
-    public override void Press()
-      => Player.Instance.DoActionDelay(1f, Execute);
-
-    public override void Execute()
-    {
+    protected override void OnActivated() {
       // 여기에 탐색 액션의 로직을 작성하자.
-      this.Log($"Wildcrafting Search Action Executed.");
+      Exp += 1;
+      this.Log($"Action has been activated.");
     }
   }
 }

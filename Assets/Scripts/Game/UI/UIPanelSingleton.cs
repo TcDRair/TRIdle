@@ -3,7 +3,6 @@ using UnityEngine;
 namespace TRIdle.Game.UI
 {
   using Logics.Extensions;
-  using TRIdle.Logics;
 
   public abstract class UIPanelSingleton<T> : MonoBehaviour where T : UIPanelSingleton<T>
   {

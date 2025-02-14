@@ -1,10 +1,14 @@
+using System;
 using System.Collections;
 
 using UnityEngine;
 
 namespace TRIdle.Game
 {
+  using UI;
   using PlayerInternal;
+
+  using Skill;
 
   using Logics.Extensions;
   using Logics.Serialization;
@@ -14,7 +18,7 @@ namespace TRIdle.Game
     static Player m_instance;
     public static Player Instance => m_instance ??= new();
 
-    public PlayerData Data { get; private set; }
+    public PlayerData Data { get; private set; } = new();
     public override IEnumerator Load() {
       this.Log($"Loading player data...");
       if (TryDeserialize($"{FilePath}/player.json", out PlayerData data))
@@ -28,28 +32,31 @@ namespace TRIdle.Game
         yield break;
       this.Log($"Failed to save player data.");
     }
-  
+
     #region Skill Actions
     PlayerMono m_mono;
     PlayerMono Mono {
       get {
         if (m_mono == null) {
           m_mono = new GameObject("PlayerMono").AddComponent<PlayerMono>();
-          Object.DontDestroyOnLoad(m_mono.gameObject);
+          UnityEngine.Object.DontDestroyOnLoad(m_mono.gameObject);
         }
         return m_mono;
       }
     }
-    
-    public void DoActionDelay(float delay, System.Action action)
-      => Mono.StartDelay(delay, action);
-    public void DoActionCooldown(float cooldown, System.Action action)
-      => Mono.StartCooldown(cooldown, action);
+
+    // Start Action Delay, but if the same action is focused, stop the delay instead.
+    public void FocusAction(ActionBase action) {
+      Mono.StartActionDelay(Data.CurrentAction = (Data.CurrentAction == action) ? null : action);
+      UI_MainSceneController.Instance.FocusAction(action);
+    }
+
     #endregion
   }
 
   public record PlayerData
   {
-
+    public SkillBase CurrentSkill;
+    public ActionBase CurrentAction;
   }
 }

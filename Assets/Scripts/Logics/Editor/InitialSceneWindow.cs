@@ -22,7 +22,7 @@ namespace TRIdle.Logics.Editor
       EditorGUILayout.EndHorizontal();
 
       if (EditorGUI.EndChangeCheck()) {
-        EditorSceneManager.playModeStartScene = m_enabled ? m_startScene : null;
+        Set();
         Save();
       }
     }
@@ -38,7 +38,9 @@ namespace TRIdle.Logics.Editor
       m_enabled = EditorPrefs.GetBool("InitialSceneWindow.Enabled", false);
       m_startScene = AssetDatabase.LoadAssetAtPath<SceneAsset>(EditorPrefs.GetString("InitialSceneWindow.Scene", ""));
       m_initialized = true;
+      Set();
     }
+    void Set() => EditorSceneManager.playModeStartScene = m_enabled ? m_startScene : null;
     void Save() {
       EditorPrefs.SetBool(kEnabledKey, m_enabled);
       EditorPrefs.SetString(kSceneKey, m_startScene ? AssetDatabase.GetAssetPath(m_startScene) : "");
