@@ -17,7 +17,7 @@ namespace TRIdle.Logics.Serialization
     public static T Deserialize<T>(string path) {
       try {
         using var stream = new FileStream(path, FileMode.Open);
-        return JsonSerializer.Deserialize<T>(stream, Const.JsonSerializerOption);
+        return JsonSerializer.Deserialize<T>(stream, GlobalConstants.JsonSerializerOption);
       }
       catch { return default; }
     }
@@ -30,7 +30,7 @@ namespace TRIdle.Logics.Serialization
 
       using var stream = new FileStream(path, FileMode.Create);
       try {
-        JsonSerializer.Serialize(stream, data, Const.JsonSerializerOption);
+        JsonSerializer.Serialize(stream, data, GlobalConstants.JsonSerializerOption);
         return true;
       }
       catch { return false; }

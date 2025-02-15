@@ -1,6 +1,7 @@
 using System.Collections;
 
 using UnityEngine;
+using UnityEditor;
 
 namespace TRIdle.Logics
 {
@@ -18,6 +19,7 @@ namespace TRIdle.Logics
 
     private IEnumerator Init() {
       this.Log("Initializing game...");
+
       yield return Player.Instance.Load();
       yield return LocalizationLoader.Instance.Load();
       // Add more loaders here
@@ -27,5 +29,26 @@ namespace TRIdle.Logics
       var loading = UnityEngine.SceneManagement.SceneManager.LoadSceneAsync("Main");
       while (!loading.isDone) yield return null; // Wait until the scene is loaded
     }
+
+    private IEnumerator Save() {
+      this.Log("Saving game...");
+
+      yield return Player.Instance.Save();
+      yield return LocalizationLoader.Instance.Save();
+      // Add more savers here
+
+      this.Log("Game saved.");
+    }
+
+#if UNITY_EDITOR
+    [CustomEditor(typeof(GameLoader))]
+    private class GameLoaderEditor : Editor
+    {
+      public override void OnInspectorGUI() {
+        base.OnInspectorGUI();
+        if (GUILayout.Button("Save")) GameLoader.Instance.StartCoroutine(GameLoader.Instance.Save());
+      }
+    }
+#endif
   }
 }

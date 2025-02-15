@@ -1,8 +1,6 @@
 namespace TRIdle.Game.Skill
 {
-  using Logics.Extensions;
-
-    public abstract class ActionBase
+  public abstract class ActionBase
   {
     public string ID { get; } // ID는 각 액션의 고유 식별자로 사용됨
     public abstract string Name { get; } // Link to Text.Current
@@ -12,7 +10,7 @@ namespace TRIdle.Game.Skill
     protected Texts.Skill Texts => Text.Current.Skill;
 
     #region Serialized Data
-    public int Exp;
+    public int Proficiency;
     public float Progress;
     #endregion
 
@@ -53,20 +51,5 @@ namespace TRIdle.Game.Skill
     public static T Instance => m_instance ??= new();
 
     protected ActionBase() { } // Prevent external instantiation of this class
-  }
-
-  public class Action_WildCrafting_Search : ActionBase<Action_WildCrafting_Search>
-  {
-    public override string Name => Texts.Action_Wildcrafting_Search_Name;
-    public override float Delay => 1.0f;
-    public override string DescriptionInfo => Texts.Action_Wildcrafting_Search_DescriptionInfo;
-    public override string DetailedInfo => string.Format(Texts.Action_Wildcrafting_Search_DetailedInfo, 10 * Fx, 20 * Fx, 30 * Fx);
-    private float Fx => UnityEngine.Mathf.Log10(Exp + 1) + 1;
-
-    protected override void OnActivated() {
-      // 여기에 탐색 액션의 로직을 작성하자.
-      Exp += 1;
-      this.Log($"Action has been activated.");
-    }
   }
 }

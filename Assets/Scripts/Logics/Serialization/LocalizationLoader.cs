@@ -18,7 +18,7 @@ namespace TRIdle.Logics.Serialization
 
     private readonly string[] files = { "title.json", "settings.json" };
     private Dictionary<string, string> languages;
-    
+
     public override IEnumerator Load() {
       this.Log($"Loading localization files...");
 
@@ -56,13 +56,24 @@ namespace TRIdle.Logics.Serialization
         Settings = Deserialize<Settings>(path + files[1]) ?? new(),
         // Add more files here
       };
-      
+
       yield return null;
     }
 
+
+    #if UNITY_EDITOR
+    // Localization files are not supposed to be saved during runtime
+    // Use this only for debugging purposes
     public override IEnumerator Save() {
-      // Localization files are not supposed to be saved during runtime
-      yield break;
+      this.Log($"Saving localization files...");
+      
+      var path = $"{FilePath}/Localizations/ko";
+      TrySerialize(path + "/title.json", Text.Current.Title);
+      TrySerialize(path + "/settings.json", Text.Current.Settings);
+
+      this.Log("Localization files are saved.");
+      yield return null;
     }
+    #endif
   }
 }

@@ -33,6 +33,11 @@ namespace TRIdle
 
     public record Skill
     {
+      public string Skill_Common_Name { get; set; } = "공통";
+      public string Action_Common_Learning_Name { get; set; } = "체득";
+      public string Action_Common_Learning_DescriptionInfo { get; set; } = "반복 수행을 통해 신체가 보다 적응합니다.";
+      public string Action_Common_Learning_DetailedInfo { get; set; } = "{0} 수행 속도 {1}% 증가";
+
       public string Skill_Wildcrafting_Name { get; set; } = "생존 기술";
       public string Action_Wildcrafting_Search_Name { get; set; } = "탐색";
       public string Action_Wildcrafting_Search_DescriptionInfo { get; set; } = "주변 환경을 탐색하여 정보를 얻습니다. 다양한 자원, 식생, 위협 요소 등을 발견할 수 있습니다.";
