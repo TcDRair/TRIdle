@@ -1,42 +1,37 @@
-
-
-using TRIdle.Texts;
-
 namespace TRIdle
 {
+  using Localization;
+
   /// <summary>
   /// Text data for localization. Deserialized from json file in StreamingAssets.<br/>
   /// Main purpose is to implement localization languages which (mainly) isn't supported by developers.<br/>
   /// Default language is Korean. <see cref="Current"/> is the current language data.
   /// </summary>
-  public record Text
+  public record TextLocale
   {
-    public Title Title { get; set; } = new();
-    public Settings Settings { get; set; } = new();
-    public Skill Skill { get; set; } = new();
+    public Text_Title Title { get; set; } = new();
+    public Text_Settings Settings { get; set; } = new();
+    public Text_Skill Skill { get; set; } = new();
 
-    public static Text Current { get; set; } = new();
+    public static TextLocale Current { get; set; } = new();
   }
 
-  namespace Texts
+  namespace Localization
   {
-    public record Title
+    public record Text_Title
     {
       public string Title_StartGameButton { get; set; } = "게임 시작";
     }
 
-    public record Settings
+    public record Text_Settings
     {
       public string Settings_Title { get; set; } = "설정";
       public string Settings_LanguageSelection { get; set; } = "언어";
     }
 
-    public record Skill
+    public record Text_Skill
     {
-      public string Skill_Common_Name { get; set; } = "공통";
-      public string Action_Common_Learning_Name { get; set; } = "체득";
-      public string Action_Common_Learning_DescriptionInfo { get; set; } = "반복 수행을 통해 신체가 보다 적응합니다.";
-      public string Action_Common_Learning_DetailedInfo { get; set; } = "{0} 수행 속도 {1}% 증가";
+      public Text_Common Common { get; set; } = new();
 
       public string Skill_Wildcrafting_Name { get; set; } = "생존 기술";
       public string Action_Wildcrafting_Search_Name { get; set; } = "탐색";

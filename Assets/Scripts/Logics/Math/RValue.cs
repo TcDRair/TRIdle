@@ -1,12 +1,12 @@
 using System;
-using System.Linq;
-using System.Numerics;
 using System.Collections.Generic;
 
 using UnityEngine;
 
-namespace TRIdle.Math.Values
+namespace TRIdle.Logics.Math
 {
+  using Logics.Extensions;
+
   public interface IDetailedValue<T>
   {
     T Value { get; }
@@ -15,85 +15,69 @@ namespace TRIdle.Math.Values
     string ToStringWithDetail();
   }
 
-  public abstract class RangedValue<T> : IDetailedValue<T> where T : IComparable
+  /// <summary>A struct that holds a float value with additional properties</summary>
+  public struct SFloat
   {
-    public T Min { get; set; }
-    public T Max { get; set; }
-    public T Base { get; set; }
-    public RangedValue(T @base, T min, T max) {
-      if (@base.CompareTo(min) < 0 || @base.CompareTo(max) > 0)
-        throw new ArgumentOutOfRangeException($"Base value {@base} is out of range [{min} ~ {max}]");
-      if (min.CompareTo(max) > 0)
+    public float value, min, max, adder, multiplier;
+
+    public SFloat(float value, float min, float max) {
+      if (value < min || value > max)
+        throw new ArgumentOutOfRangeException($"Value {value} is out of range [{min} ~ {max}]");
+      if (min > max)
         throw new ArgumentOutOfRangeException($"Min value {min} is greater than Max value {max}");
-      Base = @base;
-      Min = min;
-      Max = max;
+      this.value = value;
+      this.min = min;
+      this.max = max;
+      adder = 0;
+      multiplier = 1;
     }
-
-    public virtual T Value => Clamp(Base);
-    protected T Clamp(T value) {
-      T result = value;
-      if (result.CompareTo(Min) < 0) result = Min;
-      if (result.CompareTo(Max) > 0) result = Max;
-      return result;
-    }
-
-    public override string ToString() => Value.ToString();
-    public virtual string ToStringWithDetail() => $"{Value} <color=gray>[{Min} ~ {Max}]</color>";
+  
+    public readonly float Calculated => Clamp(Clamp(value + adder) * multiplier);
+    private readonly float Clamp(float value) => Mathf.Clamp(value, min, max);
   }
+  /// <summary>Delegate using SFloat as input/output</summary>
+  public delegate SFloat Modifier(SFloat value);
 
-  public abstract class ModifiedRangedValue<T> : RangedValue<T> where T : IComparable
+  /// <summary>A class that holds a float value with modifiers</summary>
+  public class RFloat : IDetailedValue<float>
   {
-    protected readonly Dictionary<object, T> m_adders = new();
-    protected readonly Dictionary<object, T> m_multipliers = new();
+    private SFloat m_base, m_result;
+    protected readonly Dictionary<object, Modifier> m_modifiers = new();
 
-    private const float UpdateInterval = 1 / 30f;
-    private float lastUpdateTime = 0;
-    protected T c_adder, c_multiplier, c_value;
+    public event Modifier Modifiers {
+      add { m_modifiers.TryAdd(value.Target, value); }
+      remove { if (m_modifiers.TryGetValue(value.Target, out _)) m_modifiers.Remove(value.Target); }
+    }
 
-    public ModifiedRangedValue(T @base, T min, T max) : base(@base, min, max) { }
-    public override T Value {
+    public RFloat(float value, float min = 0, float max = 1e9f) {
+      if (min > max)
+        throw new ArgumentOutOfRangeException($"Min value {min} is greater than Max value {max}");
+      if (value < min || value > max)
+        throw new ArgumentOutOfRangeException($"Given value {value} is out of range [{min} ~ {max}]");
+      
+      UpdateValue();
+    }
+
+    private float m_cachedValue;
+    public float Value {
       get {
-        if (Time.time - lastUpdateTime > UpdateInterval) {
-          lastUpdateTime = Time.time;
-          CalculateValue();
+        if (Time.time - m_cachedTime > UpdateInterval) {
+          m_cachedTime = Time.time;
+          UpdateValue();
         }
-        return c_value;
+        return m_cachedValue;
       }
     }
-
-    // Make non-abstract function if arithmetic interfaces are implemented (.Net 7+ features now)
-    protected abstract void CalculateValue();
+    private float m_cachedTime = -1;
+    private const float UpdateInterval = 1 / 30f;
+    private void UpdateValue() {
+      m_result = m_base;
+      foreach (var modifier in m_modifiers.Values)
+        m_result = modifier(m_result);
+      m_cachedValue = m_result.Calculated;
+    }
 
     public override string ToString() => Value.ToString();
-    public override string ToStringWithDetail() => $"{Value} <color=gray>= ({Base} + {c_adder}) * {c_multiplier} [{Min} ~ {Max}]</color>";
-  }
-}
-
-namespace TRIdle.Math
-{
-  using Values;
-
-  public class RInt : ModifiedRangedValue<int>
-  {
-    public const int DefaultMax = (int)1e9; // almost half of int.MaxValue
-    public RInt(int @base, int min = 0, int max = DefaultMax) : base(@base, min, max) { }
-
-    protected override void CalculateValue() {
-      c_adder = m_adders.Values.Sum();
-      c_multiplier = m_multipliers.Values.Sum();
-      c_value = Clamp(Clamp(Base + c_adder) * c_multiplier);
-    }
-  }
-  public class RFloat : ModifiedRangedValue<float>
-  {
-    public const float DefaultMax = 1e9f;
-    public RFloat(float @base, float min = 0, float max = DefaultMax) : base(@base, min, max) { }
-
-    protected override void CalculateValue() {
-      c_adder = m_adders.Values.Sum();
-      c_multiplier = m_multipliers.Values.Sum();
-      c_value = Clamp(Clamp(Base + c_adder) * c_multiplier);
-    }
+    public string ToStringWithDetail() => $"{Value} <color=gray>= ({m_result.value} + {m_result.adder}) * {m_result.multiplier} [{m_result.min} ~ {m_result.max}]</color>";
   }
 }

@@ -9,7 +9,7 @@ using System.Collections.Generic;
 namespace TRIdle.Logics.Serialization
 {
   using Extensions;
-  using TRIdle.Texts;
+  using TRIdle.Localization;
 
   public class LocalizationLoader : LoaderBase
   {
@@ -51,9 +51,9 @@ namespace TRIdle.Logics.Serialization
       }
 
       var path = $"{FilePath}/Localizations/{lang}/";
-      Text.Current = new() {
-        Title = Deserialize<Title>(path + files[0]) ?? new(),
-        Settings = Deserialize<Settings>(path + files[1]) ?? new(),
+      TextLocale.Current = new() {
+        Title = Deserialize<Text_Title>(path + files[0]) ?? new(),
+        Settings = Deserialize<Text_Settings>(path + files[1]) ?? new(),
         // Add more files here
       };
 
@@ -68,8 +68,8 @@ namespace TRIdle.Logics.Serialization
       this.Log($"Saving localization files...");
       
       var path = $"{FilePath}/Localizations/ko";
-      TrySerialize(path + "/title.json", Text.Current.Title);
-      TrySerialize(path + "/settings.json", Text.Current.Settings);
+      TrySerialize(path + "/title.json", TextLocale.Current.Title);
+      TrySerialize(path + "/settings.json", TextLocale.Current.Settings);
 
       this.Log("Localization files are saved.");
       yield return null;

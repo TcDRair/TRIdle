@@ -6,10 +6,10 @@ using UnityEngine;
 namespace TRIdle.Game
 {
   using UI;
+  using Skill;
   using PlayerInternal;
 
-  using Skill;
-
+  using Logics.Math;
   using Logics.Extensions;
   using Logics.Serialization;
 
@@ -58,5 +58,7 @@ namespace TRIdle.Game
   {
     public SkillBase CurrentSkill;
     public ActionBase CurrentAction;
+
+    public RFloat ActionSpeed = new(1);
   }
 }

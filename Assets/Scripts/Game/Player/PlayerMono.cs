@@ -43,7 +43,7 @@ namespace TRIdle.Game.PlayerInternal
 
     IEnumerator Delay() {
       DelayElapsed = 0;
-      DelayDuration = m_delayingAction.Delay;
+      DelayDuration = m_delayingAction.Data.Duration.Value;
 
       while (DelayElapsed < DelayDuration) {
         DelayElapsed += Time.deltaTime;
