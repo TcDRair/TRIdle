@@ -1,5 +1,6 @@
 namespace TRIdle.Game.Skill
 {
+  using System.Text.Json.Nodes;
   using Base;
 
   // ActionBase와 유사한 구조 사용
@@ -7,7 +8,7 @@ namespace TRIdle.Game.Skill
   // 추후 Action과의 공통분모는 인터페이스로 분리할 것.
   // 지금 당장은 Action과 Effect의 공통분모가 없어서 인터페이스로 분리할 필요가 없음.
   
-  public abstract class EffectBase : IDBase
+  public abstract class EffectBase : SerializedBase
   {
     public abstract string Description { get; }
 
@@ -22,11 +23,17 @@ namespace TRIdle.Game.Skill
     public abstract void OnUpdate();
     // Invoked once when the effect is deactivated
     public abstract void OnDeactivate();
+
+    // Effects are not saved or loaded
+    public sealed override void LoadData(JsonNode data) { }
+    public sealed override JsonNode SaveData() => null;
+    protected sealed override void LoadCustomData(JsonNode data) { }
+    protected sealed override JsonNode SaveCustomData() => null;
   }
 
   public abstract class EffectBase<T> : EffectBase, IInst<T> where T : EffectBase<T>, new()
   {
-    public override int ID => nameof(T).GetHashCode();
+    public override string ID => typeof(T).Name;
     public static T Instance => IInst<T>.Instance;
   }
 }

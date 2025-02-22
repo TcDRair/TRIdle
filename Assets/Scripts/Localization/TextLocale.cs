@@ -11,7 +11,7 @@ namespace TRIdle
   {
     public Text_Title Title { get; set; } = new();
     public Text_Settings Settings { get; set; } = new();
-    public Text_Skill Skill { get; set; } = new();
+    public Text_Skills Skills { get; set; } = new();
 
     public static TextLocale Current { get; set; } = new();
   }
@@ -29,7 +29,7 @@ namespace TRIdle
       public string Settings_LanguageSelection { get; set; } = "언어";
     }
 
-    public record Text_Skill
+    public record Text_Skills
     {
       public Text_Common Common { get; set; } = new();
 

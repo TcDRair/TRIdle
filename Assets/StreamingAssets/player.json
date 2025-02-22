@@ -1,1 +1,17 @@
-{}
+{
+  "player": {
+    "Placeholder": "Placeholder"
+  },
+  "skills": {
+    "Skill_Wildcrafting": {
+      "custom": {},
+      "actions": {
+        "Action_Wildcrafting_Search": {
+          "proficiency": 0,
+          "progress": 0,
+          "custom": {}
+        }
+      }
+    }
+  }
+}

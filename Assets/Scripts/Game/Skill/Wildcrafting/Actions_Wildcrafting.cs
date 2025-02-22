@@ -2,6 +2,7 @@ namespace TRIdle.Game.Skill
 {
   using Logics.Math;
   using Logics.Extensions;
+  using System.Text.Json.Nodes;
 
   public class Action_Wildcrafting_Search : ActionBase<Action_Wildcrafting_Search>
   {
@@ -19,5 +20,8 @@ namespace TRIdle.Game.Skill
       Proficiency += 1;
       this.Log($"Action has been activated.");
     }
+
+    protected override void LoadCustomData(JsonNode data) { }
+    protected override JsonNode SaveCustomData() => null;
   }
 }

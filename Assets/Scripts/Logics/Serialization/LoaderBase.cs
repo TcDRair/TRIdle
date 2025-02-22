@@ -1,5 +1,6 @@
 using System.IO;
 using System.Text.Json;
+using System.Text.Json.Nodes;
 using System.Collections;
 using System.Collections.Generic;
 
@@ -24,13 +25,36 @@ namespace TRIdle.Logics.Serialization
     public static bool TryDeserialize<T>(string path, out T data)
       => (data = Deserialize<T>(path)) is not null;
 
-    public static bool TrySerialize<T>(string path, T data) {
-      if (Directory.Exists(Path.GetDirectoryName(path)) is false)
-        Directory.CreateDirectory(Path.GetDirectoryName(path));
-
-      using var stream = new FileStream(path, FileMode.Create);
+    public static bool TryDeserializeDynamic(string path, out JsonNode node) {
       try {
+        using var stream = new FileStream(path, FileMode.Open);
+        node = JsonNode.Parse(stream);
+        return true;
+      }
+      catch {
+        node = null;
+        return false;
+      }
+    }
+
+    public static bool TrySerialize<T>(string path, T data) {
+      try {
+        if (Directory.Exists(Path.GetDirectoryName(path)) is false)
+          Directory.CreateDirectory(Path.GetDirectoryName(path));
+        using var stream = new FileStream(path, FileMode.Create);
         JsonSerializer.Serialize(stream, data, GlobalConstants.JsonSerializerOption);
+        return true;
+      }
+      catch { return false; }
+    }
+
+    public static bool TrySerializeDynamic(string path, JsonNode node) {
+      try {
+        if (Directory.Exists(Path.GetDirectoryName(path)) is false)
+          Directory.CreateDirectory(Path.GetDirectoryName(path));
+
+        using var stream = new FileStream(path, FileMode.Create);
+        JsonSerializer.Serialize(stream, node, GlobalConstants.JsonSerializerOption);
         return true;
       }
       catch { return false; }

@@ -1,4 +1,5 @@
 using System.Collections.Generic;
+using System.Text.Json.Nodes;
 
 namespace TRIdle.Game.Skill
 {
@@ -9,5 +10,12 @@ namespace TRIdle.Game.Skill
     public override IEnumerable<ActionBase> Actions => new ActionBase[] {
       // todo add actions
     };
+
+
+    protected override void LoadCustomData(JsonNode data) {
+      // todo load data (exclude actions)
+    }
+
+    protected override JsonNode SaveCustomData() => null;
   }
 }

@@ -15,24 +15,31 @@ namespace TRIdle.Game.Skill
 
     private ActionBase Current => Player.Instance.Data.CurrentAction;
     public override void OnUpdate() {
-      // TODO: Implement the logic for the effect.
+      // Add current action if not in the dictionary
+      if (m_cumulated.TryGetValue(Current, out _) is false) {
+        m_cumulated.Add(Current, 0);
+        Current.Data.Speed.Modifiers += ModifyActionSpeed(Current);
+      }
 
-      // Reduce all cumulated values, except for the current action
-      if (m_cumulated.TryGetValue(Current, out _) is false) m_cumulated.Add(Current, 0);
-
+      // Update stack count
       foreach (var action in m_cumulated.Keys) {
         if (action == Current) m_cumulated[action]++;
-        else if (--m_cumulated[action] == 0) m_cumulated.Remove(action);
+        else if (--m_cumulated[action] == 0) {
+          action.Data.Speed.Modifiers -= ModifyActionSpeed(action);
+          m_cumulated.Remove(action);
+        }
       }
     }
 
     private const int Yield = 30, Duration = 1800;
     private const float SpeedMultiplier = 0.2f;
-    SFloat ModifyActionSpeed(SFloat value) {
-      if (m_cumulated.TryGetValue(Current, out int count))
-        value.multiplier += Mathf.Clamp(count - Yield, 0f, Duration) / Duration * SpeedMultiplier;
-      return value;
-    }
+    Modifier ModifyActionSpeed(ActionBase action) 
+      => m_cumulated.TryGetValue(action, out int count) ?
+        value => {
+          value.multiplier += Mathf.Clamp(count - Yield, 0f, Duration) / Duration * SpeedMultiplier;
+          return value;
+        } :
+        value => value; // Somehow if the action is not in the dictionary, it should not be modified
 
     public override void OnActivate() { }
     public override void OnDeactivate() { }
