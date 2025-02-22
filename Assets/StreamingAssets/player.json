@@ -1,1 +1,18 @@
-{}
+{
+  "Player": {
+    "name" : "sth",
+    "sth regarding player" : "sth will be here"
+  },
+  "Skills" : [
+    {
+      "id" : "asdf",
+      "sth" : "sth will be here"
+    }
+  ],
+  "Inventory" : [
+    {
+      "id" : "asdf",
+      "sth" : "sth will be here"
+    }
+  ]
+}

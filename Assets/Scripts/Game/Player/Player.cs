@@ -1,4 +1,6 @@
 using System;
+using System.Linq;
+using System.Reflection;
 using System.Collections;
 
 using UnityEngine;
@@ -19,11 +21,31 @@ namespace TRIdle.Game
     public static Player Instance => m_instance ??= new();
 
     public PlayerData Data { get; private set; } = new();
+
+    // ... PlayerData에 스킬도 다 넣어버릴까 그냥
     public override IEnumerator Load() {
       this.Log($"Loading player data...");
-      if (TryDeserialize($"{FilePath}/player.json", out PlayerData data))
-        Data = data;
+      if (TryDeserializeDynamic($"{FilePath}/player.json", out var node)) {
+        Data = node["player"].GetValue<PlayerData>();
+        // Skill Progress = node["skills"].GetValue<sth>();
+      }
       yield break;
+
+      IEnumerator LoadSkill() {
+        var skills = typeof(Skills)
+          .GetProperties(BindingFlags.Public | BindingFlags.Static)
+          .Where(property => property.PropertyType.IsSubclassOf(typeof(SkillBase)))
+          .Select(property => property.GetValue(null) as SkillBase);
+
+        foreach (var skill in skills) {
+          // Load the skill.
+          // the skill would be serialized to json as List<SkillBase>.
+          // During the deserialization, it will be Dictionary<string, SkillBase>.
+          // The key is the skill ID.
+        }
+
+        yield break;
+      }
     }
 
     public override IEnumerator Save() {
