@@ -1,6 +1,7 @@
 {
   "Common": {
     "Skill_Common_Name": "공통",
+    "Skill_Common_Description_Info": "숙련도 {0} / {1}",
     "Effect_Internalization_Name": "체득",
     "Effect_Internalization_Description": "몸이 기억하는 행위는 쉽게 잊히지 않는다.\n장시간의 수련을 통해 단순 반복 작업의 효율을 상승시킨다."
   },

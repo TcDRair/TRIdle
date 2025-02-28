@@ -21,9 +21,12 @@ namespace TRIdle.Game.Skill.Base
     public override int GetHashCode() => ID.GetHashCode();
   }
 
-  public interface IInst<T> where T : IInst<T>, new()
+  // III라니 신기하군
+  public interface IIdendifiedInstance<T> where T : IIdendifiedInstance<T>, new()
   {
     private static T m_instance;
     public static T Instance => m_instance ??= new();
+
+    protected static string UID => typeof(T).FullName.GetHashCode().ToString();
   }
 }

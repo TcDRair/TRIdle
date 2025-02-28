@@ -31,9 +31,9 @@ namespace TRIdle.Game.Skill
     protected sealed override JsonNode SaveCustomData() => null;
   }
 
-  public abstract class EffectBase<T> : EffectBase, IInst<T> where T : EffectBase<T>, new()
+  public abstract class EffectBase<T> : EffectBase, IIdendifiedInstance<T> where T : EffectBase<T>, new()
   {
-    public override string ID => typeof(T).Name;
-    public static T Instance => IInst<T>.Instance;
+    public override sealed string ID => IIdendifiedInstance<T>.UID;
+    public static T Instance => IIdendifiedInstance<T>.Instance;
   }
 }

@@ -21,7 +21,9 @@ namespace TRIdle.Logics
       this.Log("Initializing game...");
 
       yield return Player.Instance.Load();
-      yield return LocalizationLoader.Instance.Load();
+      // yield return LocalizationLoader.Instance.Load();
+      // Temporarily disabled localization loader
+
       // Add more loaders here
 
       // Load the main scene

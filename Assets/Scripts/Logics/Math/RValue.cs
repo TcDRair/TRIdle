@@ -55,6 +55,7 @@ namespace TRIdle.Logics.Math
       if (value < min || value > max)
         throw new ArgumentOutOfRangeException($"Given value {value} is out of range [{min} ~ {max}]");
       
+      m_base = new SFloat(value, min, max);
       UpdateValue();
     }
 

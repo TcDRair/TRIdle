@@ -3,12 +3,12 @@
     "Placeholder": "Placeholder"
   },
   "skills": {
-    "Skill_Wildcrafting": {
+    "-890435263": {
       "custom": {},
       "actions": {
-        "Action_Wildcrafting_Search": {
-          "proficiency": 0,
-          "progress": 0,
+        "1442137623": {
+          "proficiency": 4,
+          "progress": 0.390694261,
           "custom": {}
         }
       }

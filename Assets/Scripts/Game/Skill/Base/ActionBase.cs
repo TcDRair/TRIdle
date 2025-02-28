@@ -44,9 +44,9 @@ namespace TRIdle.Game.Skill
     public abstract ValueData Data { get; }
   }
 
-  public abstract class ActionBase<T> : ActionBase, IInst<T> where T : ActionBase<T>, new()
+  public abstract class ActionBase<T> : ActionBase, IIdendifiedInstance<T> where T : ActionBase<T>, new()
   {
-    public override string ID => typeof(T).Name;
-    public static T Instance => IInst<T>.Instance;
+    public override sealed string ID => IIdendifiedInstance<T>.UID;
+    public static T Instance => IIdendifiedInstance<T>.Instance;
   }
 }

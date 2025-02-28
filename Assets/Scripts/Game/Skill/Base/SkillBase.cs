@@ -25,10 +25,10 @@ namespace TRIdle.Game.Skill
       return node;
     }
   }
-  public abstract class SkillBase<T> : SkillBase, IInst<T> where T : SkillBase<T>, new()
+  public abstract class SkillBase<T> : SkillBase, IIdendifiedInstance<T> where T : SkillBase<T>, new()
   {
-    public override string ID => typeof(T).Name;
-    public static T Instance => IInst<T>.Instance;
+    public override sealed string ID => IIdendifiedInstance<T>.UID;
+    public static T Instance => IIdendifiedInstance<T>.Instance;
 
   }
 }
