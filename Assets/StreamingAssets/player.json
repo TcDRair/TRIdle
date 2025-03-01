@@ -4,11 +4,12 @@
   },
   "skills": {
     "-890435263": {
+      "proficiency": 2,
       "custom": {},
       "actions": {
         "1442137623": {
-          "proficiency": 69,
-          "progress": 0.511980653,
+          "proficiency": 5,
+          "progress": 0.90878278,
           "custom": {}
         }
       }

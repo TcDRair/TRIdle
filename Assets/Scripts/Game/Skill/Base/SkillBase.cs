@@ -7,9 +7,13 @@ namespace TRIdle.Game.Skill
 
   public abstract class SkillBase : SerializedBase
   {
+    public abstract string Description { get; }
+    public int Proficiency;
+
     public abstract IEnumerable<ActionBase> Actions { get; }
 
     public override sealed void LoadData(JsonNode data) {
+      Proficiency = data["proficiency"].GetValue<int>();
       LoadCustomData(data["custom"]);
       var actionNode = data["actions"];
       foreach (var action in Actions)
@@ -20,6 +24,7 @@ namespace TRIdle.Game.Skill
       JsonObject node = new(), actionNode = new();
       foreach (var action in Actions)
         actionNode[action.ID.ToString()] = action.SaveData() ?? new JsonObject();
+      node["proficiency"] = Proficiency;
       node["custom"] = SaveCustomData() ?? new JsonObject();
       node["actions"] = actionNode;
       return node;

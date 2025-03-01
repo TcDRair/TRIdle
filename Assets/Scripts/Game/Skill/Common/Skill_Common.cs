@@ -6,6 +6,7 @@ namespace TRIdle.Game.Skill
   public class Skill_Common : SkillBase<Skill_Common>
   {
     public override string Name => Text.Common.Skill_Common_Name;
+    public override string Description => Text.Common.Skill_Common_Description;
 
     public override IEnumerable<ActionBase> Actions => new ActionBase[] {
       // todo add actions

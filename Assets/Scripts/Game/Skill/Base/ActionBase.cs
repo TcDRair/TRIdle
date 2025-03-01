@@ -4,13 +4,16 @@ namespace TRIdle.Game.Skill
 {
   using Base;
   using Logics.Math;
+    using TRIdle.Logics.Extensions;
 
-  public abstract class ActionBase : SerializedBase
+    public abstract class ActionBase : SerializedBase
   {
+    public abstract SkillBase BaseSkill { get; }
+
     public abstract string DescriptionInfo { get; } // Link to Text.Current
     public abstract string DetailedInfo { get; } // Link to Text.Current
 
-    #region Serialized Data
+    #region Data
     public int Proficiency;
     public float Progress;
 
@@ -30,6 +33,7 @@ namespace TRIdle.Game.Skill
 
     public void Activate() {
       OnActivated();
+      BaseSkill.Proficiency++; // TODO : add proficiency modifier and calculate for each action
       Progress--;
     }
 
