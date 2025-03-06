@@ -18,6 +18,9 @@ namespace TRIdle.Game.UI
       m_action = action;
       m_text.text = action.Name;
     }
+    public void Refresh() {
+      m_text.text = m_action.Name;
+    }
 
     public void OnClick() => Player.Instance.FocusAction(m_action);
 

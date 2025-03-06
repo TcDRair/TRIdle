@@ -10,12 +10,16 @@ namespace TRIdle.Game.UI
   [RequireComponent(typeof(Button))]
   public class UI_MenuElement : MonoBehaviour
   {
-    [SerializeField] private TextMeshProUGUI m_Text;
+    [SerializeField] private TextMeshProUGUI m_Text; // SubText 
     private SkillBase m_skill;
 
     public void Initialize(SkillBase skill) {
       m_skill = skill;
       m_Text.text = skill.Name;
+    }
+
+    public void Refresh() {
+      m_Text.text = m_skill.Name;
     }
 
     public void OnClick()

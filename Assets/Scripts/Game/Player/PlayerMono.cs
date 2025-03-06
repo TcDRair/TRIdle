@@ -53,7 +53,7 @@ namespace TRIdle.Game.PlayerInternal
 
       m_delayingAction.Activate();
       m_delayingAction.Progress = DelayElapsed = 0;
-      UI_MainSceneController.Instance.UpdateElements(); // Update UI
+      UI_MainSceneController.Instance.Menu_Update();
     }
   }
 }
