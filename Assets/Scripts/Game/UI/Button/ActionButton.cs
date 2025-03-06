@@ -4,7 +4,7 @@ using UnityEngine.UI;
 
 using TMPro;
 
-namespace TRIdle.Game
+namespace TRIdle.Game.UI
 {
   using Skill;
 

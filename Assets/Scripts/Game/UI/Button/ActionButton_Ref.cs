@@ -1,7 +1,7 @@
 using System;
 using UnityEngine;
 
-namespace TRIdle.Game
+namespace TRIdle.Game.UI
 {
   using Skill;
   

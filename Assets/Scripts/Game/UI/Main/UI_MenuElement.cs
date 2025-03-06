@@ -14,6 +14,7 @@ namespace TRIdle.Game.UI
     private SkillBase m_skill;
 
     public void Initialize(SkillBase skill) {
+      if (skill is null) throw new System.NullReferenceException("Null Skill has been passed to the menu element");
       m_skill = skill;
       m_Text.text = skill.Name;
     }
