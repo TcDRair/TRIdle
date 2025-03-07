@@ -336,7 +336,19 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: d0b148fe25e99eb48b9724523833bab1, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  m_Delegates: []
+  m_Delegates:
+  - eventID: 2
+    callback:
+      m_PersistentCalls:
+        m_Calls: []
+  - eventID: 3
+    callback:
+      m_PersistentCalls:
+        m_Calls: []
+  - eventID: 1
+    callback:
+      m_PersistentCalls:
+        m_Calls: []
 --- !u!114 &9141466118687073607
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -611,6 +623,10 @@ PrefabInstance:
       propertyPath: m_EventTrigger
       value: 
       objectReference: {fileID: 1615632067729822642}
+    - target: {fileID: 632970242991797673, guid: bc1b4682f982d0243b2b085febea1592, type: 3}
+      propertyPath: m_TargetGraphic
+      value: 
+      objectReference: {fileID: 5964523863835129316}
     - target: {fileID: 2768901620670302214, guid: bc1b4682f982d0243b2b085febea1592, type: 3}
       propertyPath: m_Name
       value: Long Press Event
@@ -717,6 +733,17 @@ MonoBehaviour:
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: d791e4b25a483df45bea985c942b1ba1, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+--- !u!114 &5964523863835129316 stripped
+MonoBehaviour:
+  m_CorrespondingSourceObject: {fileID: 8236088961760695478, guid: bc1b4682f982d0243b2b085febea1592, type: 3}
+  m_PrefabInstance: {fileID: 2344767492082671954}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 0
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: fe87c0e1cc204ed48ad3b37840f39efc, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
 --- !u!224 &9048612304496744050 stripped

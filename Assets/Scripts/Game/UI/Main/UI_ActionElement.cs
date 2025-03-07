@@ -12,7 +12,7 @@ namespace TRIdle.Game.UI
   {
     [SerializeField] private TextMeshProUGUI m_text;
     [SerializeField] private Image m_progress;
-    [SerializeField] private LongPressEvent m_longPressEvent;
+    [SerializeField] private LongClickButton m_longPressEvent;
 
     private ActionBase m_action;
     public void Initialize(ActionBase action) {
@@ -21,7 +21,7 @@ namespace TRIdle.Game.UI
 
       // TODO : move button OnClick event to LongPressEvent,
       // because the button doesn't recognize long press event, which should not be invoke onclick event
-      m_longPressEvent.OnLongPress.AddListener(() => UI_MainSceneController.Instance.Menu_EnablePopup(true));
+      m_longPressEvent.OnLongPress.AddListener(() => UI_MainSceneController.Instance.Action_Popup(true));
     }
     public void Refresh() {
       m_text.text = m_action.Name;

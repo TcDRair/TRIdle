@@ -52,5 +52,8 @@ namespace TRIdle.Game.UI
 
     public void Action_Focus(ActionBase action)
       => m_MainArea.Focus(action);
+    
+    public void Action_Popup(bool enable)
+      => m_MainArea.ActionPopup(enable);
   }
 }
