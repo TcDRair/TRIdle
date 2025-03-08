@@ -5,8 +5,9 @@ using UnityEngine;
 
 namespace TRIdle.Game.PlayerInternal
 {
+  using UI;
   using Skill;
-  using TRIdle.Game.UI;
+  using Logics.Extensions;
 
   /// <summary>
   /// PlayerMono is a MonoBehaviour that provides delay and cooldown functionalities.
@@ -30,30 +31,27 @@ namespace TRIdle.Game.PlayerInternal
         if (m_delayingAction is not null) m_delayingAction.Progress = 0;
       }
       // null action : update and ignore
-      if (action is null) { m_delayingAction = null; return; }
-
-      m_delayingAction = action;
+      if ((m_delayingAction = action) is null) return;
+      // start delay
+      this.Log("Start Delay!");
       m_delayCoroutine = StartCoroutine(DelayLoop());
     }
 
     IEnumerator DelayLoop() {
-      while (m_delayingAction is not null)
-        yield return Delay();
-    }
+      while (m_delayingAction is not null) {
+        DelayElapsed = 0;
+        DelayDuration = m_delayingAction.Data.Duration.Value;
 
-    IEnumerator Delay() {
-      DelayElapsed = 0;
-      DelayDuration = m_delayingAction.Data.Duration.Value;
+        while (DelayElapsed < DelayDuration) {
+          DelayElapsed += Time.deltaTime;
+          m_delayingAction.Progress = DelayElapsed / DelayDuration;
+          yield return null;
+        }
 
-      while (DelayElapsed < DelayDuration) {
-        DelayElapsed += Time.deltaTime;
-        m_delayingAction.Progress = DelayElapsed / DelayDuration;
-        yield return null;
+        m_delayingAction.Activate();
+        m_delayingAction.Progress = DelayElapsed = 0;
+        UI_MainSceneController.Instance.Menu_Update();
       }
-
-      m_delayingAction.Activate();
-      m_delayingAction.Progress = DelayElapsed = 0;
-      UI_MainSceneController.Instance.Menu_Update();
     }
   }
 }

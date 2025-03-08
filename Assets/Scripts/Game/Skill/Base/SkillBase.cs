@@ -16,8 +16,10 @@ namespace TRIdle.Game.Skill
       Proficiency = data["proficiency"].GetValue<int>();
       LoadCustomData(data["custom"]);
       var actionNode = data["actions"];
-      foreach (var action in Actions)
-        action.LoadData(actionNode[action.ID.ToString()]);
+      foreach (var action in Actions) {
+        try { action.LoadData(actionNode[action.ID.ToString()]); }
+        catch { continue; } // Skip invalid action
+      }
     }
 
     public override sealed JsonNode SaveData() {

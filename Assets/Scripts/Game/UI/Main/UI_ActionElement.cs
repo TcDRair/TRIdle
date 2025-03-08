@@ -6,32 +6,31 @@ using TMPro;
 namespace TRIdle.Game.UI
 {
   using Skill;
+  using TRIdle.Logics.Extensions;
 
   /// <summary>Default UI element for action. Derive this class to create custom Action UI.</summary>
   public class UI_ActionElement : MonoBehaviour
   {
-    [SerializeField] private TextMeshProUGUI m_text;
-    [SerializeField] private Image m_progress;
+    [SerializeField] private TextMeshProUGUI m_Text;
+    [SerializeField] private Image m_Progress;
+    [SerializeField] private LongClickButton m_LongClickButton;
 
     private ActionBase m_action;
     public void Initialize(ActionBase action) {
+      if (action == null) { this.LogError("Action element instantiated without a valid action."); return; }
       m_action = action;
-      m_text.text = action.Name;
-
-      // TODO : move button OnClick event to LongPressEvent,
-      // because the button doesn't recognize long press event, which should not be invoke onclick event
-      // m_longPressEvent.OnLongPress?.AddListener(() => UI_MainSceneController.Instance.Action_Popup(true));
+      m_Text.text = action.Name;
     }
     public void Refresh() {
-      m_text.text = m_action.Name;
+      m_Text.text = m_action.Name;
     }
-
-    public void OnClick() => Player.Instance.FocusAction(m_action);
+    // TODO : divide focusing and activating action
+    public void Activate() => Player.Instance.ActivateAction(m_action);
+    public void Focus() => UI_MainSceneController.Instance.Action_Focus(m_action);
+    public void ShowPopup() => UI_MainSceneController.Instance.Action_Popup(true);
 
     protected virtual void Update() {
-      if (m_action is null) return;
-
-      m_progress.fillAmount = m_action.Progress;
+      m_Progress.fillAmount = m_action.Progress;
     }
   }
 }

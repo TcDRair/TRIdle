@@ -4,9 +4,8 @@ namespace TRIdle.Game.Skill
 {
   using Base;
   using Logics.Math;
-    using TRIdle.Logics.Extensions;
 
-    public abstract class ActionBase : SerializedBase
+  public abstract class ActionBase : SerializedBase
   {
     public abstract SkillBase BaseSkill { get; }
 
@@ -19,7 +18,7 @@ namespace TRIdle.Game.Skill
 
     public override sealed void LoadData(JsonNode data) {
       Proficiency = data["proficiency"].GetValue<int>();
-      Progress = data["progress"].GetValue<float>();
+      // Progress = data["progress"].GetValue<float>(); // Does this really need?
       LoadCustomData(data["custom"]);
     }
 
@@ -52,5 +51,21 @@ namespace TRIdle.Game.Skill
   {
     public override sealed string ID => IIdendifiedInstance<T>.UID;
     public static T Instance => IIdendifiedInstance<T>.Instance;
+  }
+
+  public class Action_Sample : ActionBase<Action_Sample>
+  {
+    public override SkillBase BaseSkill => null;
+
+    public override string Name => "Sample Action";
+    public override string DescriptionInfo => "This is a sample action";
+    public override string DetailedInfo => "Details about this action";
+
+    private ValueData m_Data;
+    public override ValueData Data => m_Data ??= new();
+
+    protected override void LoadCustomData(JsonNode data) { }
+    protected override void OnActivated() { }
+    protected override JsonNode SaveCustomData() => null;
   }
 }

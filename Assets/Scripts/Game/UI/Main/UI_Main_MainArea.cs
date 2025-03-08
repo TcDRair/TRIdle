@@ -9,11 +9,15 @@ using TMPro;
 namespace TRIdle.Game.UI
 {
   using Skill;
+  using TRIdle.Logics.Extensions;
+
   public partial class UI_MainSceneController
   {
     [Serializable]
     public class UI_Main_MainArea : IMainUIContent
     {
+      public TextMeshProUGUI SkillDescription;
+
       public GameObject ActionElementPrefab;
       public RectTransform ActionPanel;
       public GameObject ActionPopupWindow;
@@ -59,11 +63,15 @@ namespace TRIdle.Game.UI
       }
 
       public void Focus(ActionBase action) {
-        if ((m_FocusedAction = action) is null) return;
+        if (m_FocusedAction == action) return;
+        this.Log($"Now focusing {action.Name}.");
+        m_FocusedAction = action;
         ActionPopupDescription.text = action.DescriptionInfo;
       }
       public void ActionPopup(bool enable) {
         ActionPopupWindow.SetActive(enable);
+        var pos = ActionPopupWindow.transform.position;
+        ActionPopupWindow.transform.position = new Vector3(pos.x, m_ActionElements[m_FocusedAction].transform.position.y, pos.z);
       }
     }
   }

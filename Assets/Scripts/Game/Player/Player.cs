@@ -71,9 +71,8 @@ namespace TRIdle.Game
     }
 
     // Start Action Delay, but if the same action is focused, stop the delay instead.
-    public void FocusAction(ActionBase action) {
+    public void ActivateAction(ActionBase action) {
       Mono.StartActionDelay(Data.CurrentAction = (Data.CurrentAction == action) ? null : action);
-      UI_MainSceneController.Instance.Action_Focus(action);
     }
 
     #endregion

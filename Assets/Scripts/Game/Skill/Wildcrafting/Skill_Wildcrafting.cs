@@ -9,7 +9,7 @@ namespace TRIdle.Game.Skill
     public override string Description => string.Format(Text.Wildcrafting.Skill_Wildcrafting_Description, Proficiency);
 
     public override IEnumerable<ActionBase> Actions => new ActionBase[] {
-      Action_Wildcrafting_Search.Instance
+      Action_Wildcrafting_Search.Instance, Action_Sample.Instance
     };
 
     protected override void LoadCustomData(JsonNode data) {
