@@ -1,0 +1,14 @@
+fileFormatVersion: 2
+guid: 45632da6580c80946b08a5a82540a13f
+PrefabImporter:
+  externalObjects: {}
+  userData: 
+  assetBundleName: 
+  assetBundleVariant: 
+AssetOrigin:
+  serializedVersion: 1
+  productId: 116852
+  packageName: GUI - The Stone
+  packageVersion: 2.3.0
+  assetPath: Assets/Imported/Layer Lab/GUI-TheStone/Prefabs/Prefabs_Component_Frames/StageFrame_White.prefab
+  uploadId: 736361

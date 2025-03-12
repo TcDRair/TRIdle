@@ -1,5 +1,5 @@
 fileFormatVersion: 2
-guid: 55b2164fee8b061499a15098bdb5649f
+guid: fb7c4cb83197a6a46af00aad50ac57c3
 DefaultImporter:
   externalObjects: {}
   userData: 
@@ -9,6 +9,6 @@ AssetOrigin:
   serializedVersion: 1
   productId: 116852
   packageName: GUI - The Stone
-  packageVersion: 2.2.1
+  packageVersion: 2.3.0
   assetPath: Assets/Imported/Layer Lab/GUI-TheStone/Scene/DemoScene_TheStone.unity
-  uploadId: 714418
+  uploadId: 736361
