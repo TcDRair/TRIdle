@@ -36,21 +36,25 @@ namespace TRIdle.Game.World
 
     const float CellSize = 4, Margin = 0.01f;
     IEnumerator SetupAllFloorCells() {
-      yield return new WaitForSeconds(5);
       this.Log("Generating grid");
 
       // Variables used
       LayerMask floorLayer = LayerMask.NameToLayer("Floor"), obstacleLayer = LayerMask.NameToLayer("Obstacle");
-      Vector3 half = (CellSize / 2).ToVector3(), flatHalf = half.SetY(0), offset = new(-Margin, Margin, -Margin);
+      Vector3 half = (CellSize / 2).ToVector3(), flatHalf = half.SetY(0);
 
       Bounds bounds = GetAllRenderersBounds(floorLayer);
       RectInt gridBounds = GetGridBounds(bounds);
-      float top = bounds.max.y, bottom = bounds.min.y;
+      float top = bounds.max.y + CellSize, bottom = bounds.min.y;
       this.Log($"Floor bounds set\n[{bounds}] -> [{gridBounds}]\nHeight: {bottom}~{top}");
 
       GenerateCellData();
       this.Log($"{m_Grid.Count} cells generated");
-      this.Log(string.Join('\n', m_Grid.Values.Select(d => $"{d.index}: {d.center} / {d.height} / {d.hasObstacle}")));
+
+      // Debug Draw
+      TDebug.DrawCube(bounds.center, bounds.extents, Color.cyan, 300);
+      foreach (var cell in m_Grid.Values)
+        if (float.IsNaN(cell.height) is false)
+          TDebug.DrawCube(cell.center.AddY(CellSize / 2), half, cell.hasObstacle ? Color.red : Color.green, 300);
 
       m_State = State.Ready;
       yield break;
@@ -59,13 +63,12 @@ namespace TRIdle.Game.World
       void GenerateCellData() {
         m_Grid.Clear();
         foreach (var cell in gridBounds.allPositionsWithin) {
-          var center = cell.X0Y() * CellSize + flatHalf;
-          // this.Log($"{center.AddY(top)} / {flatHalf + offset} / {top - bottom} / {floorLayer}");
-          var height = CellCast(center.AddY(top), flatHalf + offset, top - bottom, out var hit, floorLayer) ? hit.point.y : float.MinValue;
-          bool hasObstacle = CellCast(center.AddY(height), half + offset, 0.01f, out _, obstacleLayer);
+          var ground = cell.X0Y() * CellSize + flatHalf; // cell center with y = 0
+          var height = CellCast(ground.AddY(top), flatHalf, top - bottom, out var hit, floorLayer.ToMask()) ? hit.point.y : float.NaN;
+          bool hasObstacle = CellCast(ground.AddY(height + CellSize / 2), half, 0, out _, obstacleLayer.ToMask());
           CellData data = new() {
             index = cell,
-            center = center,
+            center = ground.AddY(height),
             height = height,
             hasObstacle = hasObstacle
           };
@@ -81,14 +84,18 @@ namespace TRIdle.Game.World
         return bounds;
       }
       static RectInt GetGridBounds(Bounds bounds) {
-        int minX = Mathf.FloorToInt(bounds.min.x / CellSize),
-          minZ = Mathf.FloorToInt(bounds.min.z / CellSize),
-          maxX = Mathf.CeilToInt(bounds.max.x / CellSize),
-          maxZ = Mathf.CeilToInt(bounds.max.z / CellSize);
-        return new RectInt(minX, minZ, maxX - minX + 1, maxZ - minZ + 1);
+        int minX = Mathf.CeilToInt(bounds.min.x / CellSize),
+          minZ = Mathf.CeilToInt(bounds.min.z / CellSize),
+          maxX = Mathf.FloorToInt(bounds.max.x / CellSize),
+          maxZ = Mathf.FloorToInt(bounds.max.z / CellSize);
+        return new RectInt(minX, minZ, maxX - minX, maxZ - minZ); // Exclude last edges
       }
-      static bool CellCast(Vector3 center, Vector3 half, float maxDistance, out RaycastHit hit, int layerMask)
-        => Physics.BoxCast(center, half, Vector3.down, out hit, Quaternion.identity, maxDistance/*, layerMask*/);
+      static bool CellCast(Vector3 center, Vector3 half, float maxDistance, out RaycastHit hit, int layerMask) {
+        // Shrink the box a bit to avoid hitting the grid's edges, except for the bottom face
+        Vector3 centerS = center.AddY(-Margin / 2); // center is slightly below from the original
+        Vector3 halfS = new(Mathf.Max(0, half.x - Margin), Mathf.Max(0, half.y - Margin), Mathf.Max(0, half.z - Margin));
+        return Physics.BoxCast(centerS, halfS, Vector3.down, out hit, Quaternion.identity, maxDistance, layerMask);
+      }
     }
   }
 }
