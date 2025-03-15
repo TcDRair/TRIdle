@@ -13,7 +13,7 @@ namespace TRIdle.Logics
         lock (lockObject) {
           if (destroyed) return null;
           if (instance == null) {
-            instance = new GameObject().AddComponent<T>();
+            instance = new GameObject(typeof(T).Name).AddComponent<T>();
             DontDestroyOnLoad(instance.gameObject);
           }
           return instance;

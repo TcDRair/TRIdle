@@ -5,7 +5,7 @@ using UnityEngine;
 
 namespace TRIdle.Logics.Math
 {
-  using Logics.Extensions;
+  using UTime = UnityEngine.Time;
 
   public interface IDetailedValue<T>
   {
@@ -62,8 +62,8 @@ namespace TRIdle.Logics.Math
     private float m_cachedValue;
     public float Value {
       get {
-        if (Time.time - m_cachedTime > UpdateInterval) {
-          m_cachedTime = Time.time;
+        if (UTime.time - m_cachedTime > UpdateInterval) {
+          m_cachedTime = UTime.time;
           UpdateValue();
         }
         return m_cachedValue;
