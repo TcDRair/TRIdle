@@ -13,7 +13,8 @@ namespace TRIdle.Game.World
   public struct CellData
   {
     public Vector2Int index;
-    public float floor;
+    public Vector3 center;
+    public float height;
     public bool hasObstacle;
   }
 
@@ -21,6 +22,7 @@ namespace TRIdle.Game.World
   {
     public enum State { NotInitialized, Initializing, Ready, Calculating }
     [SerializeField, ReadonlyField] private State m_State = State.NotInitialized;
+    private readonly Dictionary<Vector2Int, CellData> m_Grid = new();
 
     public void Setup() {
       if (m_State is not State.NotInitialized) {
@@ -32,57 +34,61 @@ namespace TRIdle.Game.World
       StartCoroutine(SetupAllFloorCells());
     }
 
-    const float CellSize = 4, InnerMargin = .001f; // TODO : need to be configurable?
-    static readonly Vector3 CellOffset = new(CellSize / 2f, 0, CellSize / 2f);
-    static readonly Vector3 CellFlatHalfExtents = CellOffset + new Vector3(-InnerMargin, 0, InnerMargin);
-    static readonly Vector3 CellHalfExtents = CellFlatHalfExtents + new Vector3(0, CellSize, 0);
-
-    private readonly Dictionary<Vector2Int, CellData> m_FloorCells = new();
+    const float CellSize = 4, Margin = 0.01f;
     IEnumerator SetupAllFloorCells() {
-      yield return null;
+      yield return new WaitForSeconds(5);
+      this.Log("Generating grid");
 
-      // Default variables
+      // Variables used
       LayerMask floorLayer = LayerMask.NameToLayer("Floor"), obstacleLayer = LayerMask.NameToLayer("Obstacle");
+      Vector3 half = (CellSize / 2).ToVector3(), flatHalf = half.SetY(0), offset = new(-Margin, Margin, -Margin);
 
-      // Find All renderers with given layer
-      var renderers = FindObjectsByType<Renderer>(FindObjectsSortMode.None);
-      Bounds bounds = new();
-      foreach (var renderer in renderers)
-        if (renderer.gameObject.layer == floorLayer)
-          bounds.Encapsulate(renderer.bounds);
-
-      // Setup cell checking variables
+      Bounds bounds = GetAllRenderersBounds(floorLayer);
       RectInt gridBounds = GetGridBounds(bounds);
-      this.Log($"{gridBounds}");
-      float topHeight = bounds.max.y;
-      this.Log($"All floor objects({renderers.Length}) found.\nFull bounds: {bounds}\nGrid bounds: {gridBounds}\nTop height: {topHeight}\n");
+      float top = bounds.max.y, bottom = bounds.min.y;
+      this.Log($"Floor bounds set\n[{bounds}] -> [{gridBounds}]\nHeight: {bottom}~{top}");
 
-      // Check each cell height
-      m_FloorCells.Clear();
-      foreach (var cell in gridBounds.allPositionsWithin) {
-        var center = new Vector3(cell.x * CellSize, 0, cell.y * CellSize) + CellOffset;
-        m_FloorCells.Add(cell, new CellData() {
-          index = cell,
-          floor = CellCast(center + new Vector3(0, topHeight, 0), CellFlatHalfExtents, out var hit, topHeight, floorLayer) ? hit.point.y : -1,
-          hasObstacle = CellCast(center, CellHalfExtents, out _, 0, obstacleLayer)
-        });
-        if (Time.TickElapsed(this)) yield return null;
-      }
-      this.Log($"All floor cells({m_FloorCells.Count}) checked.");
-      this.Log(string.Join('\n', m_FloorCells.Values.Select(x => $"{x.index}: {x.floor}, {x.hasObstacle}")));
+      GenerateCellData();
+      this.Log($"{m_Grid.Count} cells generated");
+      this.Log(string.Join('\n', m_Grid.Values.Select(d => $"{d.index}: {d.center} / {d.height} / {d.hasObstacle}")));
+
       m_State = State.Ready;
+      yield break;
 
-      static RectInt GetGridBounds(Bounds bounds) {
-        int mx = Mathf.FloorToInt(bounds.min.x / CellSize);
-        int mz = Mathf.FloorToInt(bounds.min.z / CellSize);
-        int Mx = Mathf.CeilToInt(bounds.max.x / CellSize);
-        int Mz = Mathf.CeilToInt(bounds.max.z / CellSize);
-        return new(mx, mz, Mx - mx + 1, Mz - mz + 1);
+      // Local functions
+      void GenerateCellData() {
+        m_Grid.Clear();
+        foreach (var cell in gridBounds.allPositionsWithin) {
+          var center = cell.X0Y() * CellSize + flatHalf;
+          // this.Log($"{center.AddY(top)} / {flatHalf + offset} / {top - bottom} / {floorLayer}");
+          var height = CellCast(center.AddY(top), flatHalf + offset, top - bottom, out var hit, floorLayer) ? hit.point.y : float.MinValue;
+          bool hasObstacle = CellCast(center.AddY(height), half + offset, 0.01f, out _, obstacleLayer);
+          CellData data = new() {
+            index = cell,
+            center = center,
+            height = height,
+            hasObstacle = hasObstacle
+          };
+          m_Grid.Add(cell, data);
+        }
       }
-
-      static bool CellCast(Vector3 center, Vector3 halfExtents, out RaycastHit hit, float distance, int layer)
-        => Physics.BoxCast(center, halfExtents, Vector3.down, out hit, Quaternion.identity, distance, layer);
-
+      static Bounds GetAllRenderersBounds(LayerMask layer) {
+        Bounds bounds = new();
+        var renderers = FindObjectsByType<Renderer>(FindObjectsSortMode.None);
+        foreach (var renderer in renderers)
+          if (renderer.gameObject.layer == layer)
+            bounds.Encapsulate(renderer.bounds);
+        return bounds;
+      }
+      static RectInt GetGridBounds(Bounds bounds) {
+        int minX = Mathf.FloorToInt(bounds.min.x / CellSize),
+          minZ = Mathf.FloorToInt(bounds.min.z / CellSize),
+          maxX = Mathf.CeilToInt(bounds.max.x / CellSize),
+          maxZ = Mathf.CeilToInt(bounds.max.z / CellSize);
+        return new RectInt(minX, minZ, maxX - minX + 1, maxZ - minZ + 1);
+      }
+      static bool CellCast(Vector3 center, Vector3 half, float maxDistance, out RaycastHit hit, int layerMask)
+        => Physics.BoxCast(center, half, Vector3.down, out hit, Quaternion.identity, maxDistance/*, layerMask*/);
     }
   }
 }
