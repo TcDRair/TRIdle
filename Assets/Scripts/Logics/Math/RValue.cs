@@ -31,7 +31,7 @@ namespace TRIdle.Logics.Math
       adder = 0;
       multiplier = 1;
     }
-  
+
     public readonly float Calculated => Clamp(Clamp(value + adder) * multiplier);
     private readonly float Clamp(float value) => Mathf.Clamp(value, min, max);
   }
@@ -41,7 +41,7 @@ namespace TRIdle.Logics.Math
   /// <summary>A class that holds a float value with modifiers</summary>
   public class RFloat : IDetailedValue<float>
   {
-    private SFloat m_base, m_result;
+    private SFloat _Base, _Result;
     protected readonly Dictionary<object, Modifier> m_modifiers = new();
 
     public event Modifier Modifiers {
@@ -54,31 +54,31 @@ namespace TRIdle.Logics.Math
         throw new ArgumentOutOfRangeException($"Min value {min} is greater than Max value {max}");
       if (value < min || value > max)
         throw new ArgumentOutOfRangeException($"Given value {value} is out of range [{min} ~ {max}]");
-      
-      m_base = new SFloat(value, min, max);
+
+      _Base = new SFloat(value, min, max);
       UpdateValue();
     }
 
-    private float m_cachedValue;
+    private float _CachedValue;
     public float Value {
       get {
-        if (UTime.time - m_cachedTime > UpdateInterval) {
-          m_cachedTime = UTime.time;
+        if (UTime.time - _CachedTime > UpdateInterval) {
+          _CachedTime = UTime.time;
           UpdateValue();
         }
-        return m_cachedValue;
+        return _CachedValue;
       }
     }
-    private float m_cachedTime = -1;
+    private float _CachedTime = -1;
     private const float UpdateInterval = 1 / 30f;
     private void UpdateValue() {
-      m_result = m_base;
+      _Result = _Base;
       foreach (var modifier in m_modifiers.Values)
-        m_result = modifier(m_result);
-      m_cachedValue = m_result.Calculated;
+        _Result = modifier(_Result);
+      _CachedValue = _Result.Calculated;
     }
 
     public override string ToString() => Value.ToString();
-    public string ToStringWithDetail() => $"{Value} <color=gray>= ({m_result.value} + {m_result.adder}) * {m_result.multiplier} [{m_result.min} ~ {m_result.max}]</color>";
+    public string ToStringWithDetail() => $"{Value} <color=gray>= ({_Result.value} + {_Result.adder}) * {_Result.multiplier} [{_Result.min} ~ {_Result.max}]</color>";
   }
 }

@@ -2,7 +2,6 @@ using UnityEngine;
 
 namespace TRIdle.Logics
 {
-  using Extensions;
   public static class TDebug
   {
     public static void DrawCube(Vector3 center, Vector3 halfExtents, Color color, float duration = 5, bool depthTest = true) {

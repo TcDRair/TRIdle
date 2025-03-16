@@ -7,7 +7,7 @@ namespace TRIdle.Game.Skill
   // Action과 같이 특정 Skill에 종속되어 있음 (분류를 위해)
   // 추후 Action과의 공통분모는 인터페이스로 분리할 것.
   // 지금 당장은 Action과 Effect의 공통분모가 없어서 인터페이스로 분리할 필요가 없음.
-  
+
   public abstract class EffectBase : SerializedBase
   {
     public abstract string Description { get; }

@@ -12,7 +12,7 @@ namespace TRIdle.Logics.Extensions
     /// <returns><see cref="true"/> if found, otherwise <see cref="false"/></returns>
     public static bool TryGetComponentInParent<T>(this GameObject gameObject, out T component) where T : Component
       => gameObject.transform.TryGetComponentInParent(out component);
-    
+
     /// <summary>Variation of <see cref="TryGetComponentInParent{T}"/></summary>
     public static bool TryGetComponentInParent<T>(this Transform transform, out T component) where T : Component {
       if (transform == null) { component = null; return false; }

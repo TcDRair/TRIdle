@@ -33,13 +33,13 @@ namespace TRIdle.Game.Skill
 
     private const int Yield = 30, Duration = 1800;
     private const float SpeedMultiplier = 0.2f;
-    Modifier ModifyActionSpeed(ActionBase action) 
-      => m_cumulated.TryGetValue(action, out int count) ?
-        value => {
+    Modifier ModifyActionSpeed(ActionBase action)
+      => m_cumulated.TryGetValue(action, out int count)
+        ? value => {
           value.multiplier += Mathf.Clamp(count - Yield, 0f, Duration) / Duration * SpeedMultiplier;
           return value;
-        } :
-        value => value; // Somehow if the action is not in the dictionary, it should not be modified
+        }
+        : value => value; // Somehow if the action is not in the dictionary, it should not be modified
 
     public override void OnActivate() { }
     public override void OnDeactivate() { }

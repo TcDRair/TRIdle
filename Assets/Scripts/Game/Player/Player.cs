@@ -45,14 +45,14 @@ namespace TRIdle.Game
     public override IEnumerator Save() {
       this.Log($"Saving player data...");
       JsonObject node = new(), skillNode = new();
-      
+
       foreach (var skill in Skills)
         skillNode[skill.ID.ToString()] = skill.SaveData();
 
       node["player"] = Data.ToJson();
       node["skills"] = skillNode;
 
-      if (TrySerializeDynamic($"{FilePath}/player.json", node) is false) 
+      if (TrySerializeDynamic($"{FilePath}/player.json", node) is false)
         this.Log($"Failed to save player data.");
 
       yield break;

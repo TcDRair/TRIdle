@@ -6,18 +6,17 @@ namespace TRIdle.Logics.Editor
 {
   public class InitialSceneWindow : EditorWindow
   {
-
-    bool m_enabled;
-    SceneAsset m_startScene;
+    bool _Enabled;
+    SceneAsset _StartScene;
     void OnGUI() {
-      if (!m_initialized) Initialize();
+      if (!_Initialized) Initialize();
 
       EditorGUI.BeginChangeCheck();
 
       EditorGUILayout.BeginHorizontal();
       EditorGUILayout.LabelField("Enable", GUILayout.Width(50));
-      GUI.enabled = m_enabled = EditorGUILayout.Toggle(m_enabled, GUILayout.Width(20));
-      m_startScene = (SceneAsset)EditorGUILayout.ObjectField(m_startScene, typeof(SceneAsset), false);
+      GUI.enabled = _Enabled = EditorGUILayout.Toggle(_Enabled, GUILayout.Width(20));
+      _StartScene = (SceneAsset)EditorGUILayout.ObjectField(_StartScene, typeof(SceneAsset), false);
       GUI.enabled = true;
       EditorGUILayout.EndHorizontal();
 
@@ -31,19 +30,19 @@ namespace TRIdle.Logics.Editor
     static void Open() => GetWindow<InitialSceneWindow>("Initial Scene Setting");
 
 
-    const string kEnabledKey = "InitialSceneWindow.Enabled";
-    const string kSceneKey = "InitialSceneWindow.Scene";
-    bool m_initialized;
+    const string EnabledKey = "InitialSceneWindow.Enabled";
+    const string SceneKey = "InitialSceneWindow.Scene";
+    bool _Initialized;
     void Initialize() {
-      m_enabled = EditorPrefs.GetBool("InitialSceneWindow.Enabled", false);
-      m_startScene = AssetDatabase.LoadAssetAtPath<SceneAsset>(EditorPrefs.GetString("InitialSceneWindow.Scene", ""));
-      m_initialized = true;
+      _Enabled = EditorPrefs.GetBool("InitialSceneWindow.Enabled", false);
+      _StartScene = AssetDatabase.LoadAssetAtPath<SceneAsset>(EditorPrefs.GetString("InitialSceneWindow.Scene", ""));
+      _Initialized = true;
       Set();
     }
-    void Set() => EditorSceneManager.playModeStartScene = m_enabled ? m_startScene : null;
+    void Set() => EditorSceneManager.playModeStartScene = _Enabled ? _StartScene : null;
     void Save() {
-      EditorPrefs.SetBool(kEnabledKey, m_enabled);
-      EditorPrefs.SetString(kSceneKey, m_startScene ? AssetDatabase.GetAssetPath(m_startScene) : "");
+      EditorPrefs.SetBool(EnabledKey, _Enabled);
+      EditorPrefs.SetString(SceneKey, _StartScene ? AssetDatabase.GetAssetPath(_StartScene) : "");
     }
   }
 }

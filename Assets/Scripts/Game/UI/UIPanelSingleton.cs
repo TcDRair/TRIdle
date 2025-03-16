@@ -8,8 +8,7 @@ namespace TRIdle.Game.UI
   {
     public static T Instance { get; private set; }
 
-    protected virtual void Awake()
-    {
+    protected virtual void Awake() {
       if (Instance != null)
         this.LogAssertion("Instance already exists. Check the scene if there are multiple instances.");
       Instance = this as T;

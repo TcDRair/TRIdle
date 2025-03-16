@@ -12,7 +12,8 @@ namespace TRIdle.Game.UI
   using Skill;
   using Logics.Extensions;
 
-  public interface IMainUIContent {
+  public interface IMainUIContent
+  {
     void Update();
     void Refresh(SkillBase skill); // TODO : increase range with interface later
   }
@@ -52,7 +53,7 @@ namespace TRIdle.Game.UI
 
     public void Action_Focus(ActionBase action)
       => m_MainArea.Focus(action);
-    
+
     public void Action_Popup(bool enable)
       => m_MainArea.ActionPopup(enable);
   }

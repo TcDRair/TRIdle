@@ -17,107 +17,114 @@ namespace TRIdle.Game.UI
   public class LongClickButton : Button
   {
     #region Serialized Fields
-    [SerializeField] protected UnityEvent m_OnLongClick, m_OnLongPress, m_OnShortClick, m_OnAnyPress;
+    [SerializeField] protected UnityEvent _OnLongClick, _OnLongPress, _OnShortClick, _OnAnyPress;
 
     [SerializeField, Tooltip("Whether to show the progress indicator while long pressing.")]
-    private bool m_ShowProgress;
-    [SerializeField] private Image m_ProgressIndicator;
+    private bool _ShowProgress;
+    [SerializeField] private Image _ProgressIndicator;
 
     [SerializeField, Tooltip("After this time(seconds) the press is considered as long pressing.")]
-    private float m_LongClickThreshold = 0.5f;
+    private float _LongClickThreshold = 0.5f;
     [SerializeField, Tooltip("After this time(seconds) OnLongPress event will be invoked.")]
-    private float m_LongPressDuration = 1f;
+    private float _LongPressDuration = 1f;
 
-    [SerializeField] private bool m_EnableLongClick = true;
+    [SerializeField] private bool _EnableLongClick = true;
     private enum PressState { Free, Press, LongPress, LongEnoughPress }
-    [SerializeField, ReadonlyField] private PressState m_State;
+    [SerializeField, ReadonlyField] private PressState _State;
 #if UNITY_EDITOR
-    [SerializeField, HideInInspector] private bool m_Initialized = false, m_Foldout1, m_Foldout2;
+    [SerializeField, HideInInspector] private bool _Initialized = false, m_Foldout1, m_Foldout2;
 #endif
     #endregion
 
 #if UNITY_EDITOR
     protected override void OnValidate() {
       base.OnValidate();
-      if (m_Initialized is false && m_ShowProgress && Application.isPlaying is false) {
+      if (_Initialized is false && _ShowProgress && Application.isPlaying is false) {
         // Create default progress indicator if it's not set.
-        if (m_ProgressIndicator == null) {
+        if (_ProgressIndicator == null) {
           var go = AssetDatabase.LoadAssetAtPath<GameObject>("Assets/Prefabs/UI/Long Click Button - Progress Indicator.prefab");
-          m_ProgressIndicator = Instantiate(go, transform).GetComponent<Image>();
+          _ProgressIndicator = Instantiate(go, transform).GetComponent<Image>();
           this.Log("Default progress indicator created. Please check it in inspector");
         }
-        m_Initialized = true;
+        _Initialized = true;
       }
     }
 #endif
 
-    private bool IndicatorEnabled => m_ShowProgress && m_ProgressIndicator != null;
-    private float m_pressedTime = float.MaxValue;
-    private Coroutine m_pointerDownCoroutine;
+    private bool IndicatorEnabled => _ShowProgress && _ProgressIndicator != null;
+    private float _PressedTime = float.MaxValue;
+    private Coroutine _PointerDownCoroutine;
     public override void OnPointerClick(PointerEventData eventData) {
-      if (m_EnableLongClick) {
-        if (m_State is PressState.Press) m_OnShortClick?.Invoke();
-        else if (m_State > PressState.Press) m_OnLongClick?.Invoke();
+      if (_EnableLongClick) {
+        if (_State is PressState.Press)
+          _OnShortClick?.Invoke();
+        else if (_State > PressState.Press)
+          _OnLongClick?.Invoke();
       }
 
       base.OnPointerClick(eventData);
-      m_State = PressState.Free;
+      _State = PressState.Free;
     }
     public override void OnPointerDown(PointerEventData eventData) {
       // Process default behaviour
       base.OnPointerDown(eventData);
-      if (m_EnableLongClick) m_OnAnyPress?.Invoke();
+      if (_EnableLongClick)
+        _OnAnyPress?.Invoke();
 
-      if (m_pointerDownCoroutine is not null) TryAbortLongPress();
+      if (_PointerDownCoroutine is not null)
+        TryAbortLongPress();
 
-      m_pressedTime = Time.unscaledTime;
+      _PressedTime = Time.unscaledTime;
       if (IndicatorEnabled) {
-        m_ProgressIndicator.gameObject.SetActive(true);
-        m_ProgressIndicator.rectTransform.position = eventData.position;
+        _ProgressIndicator.gameObject.SetActive(true);
+        _ProgressIndicator.rectTransform.position = eventData.position;
       }
-      m_pointerDownCoroutine = StartCoroutine(PressDownEnumerator());
+      _PointerDownCoroutine = StartCoroutine(PressDownEnumerator());
     }
     public override void OnPointerUp(PointerEventData eventData) {
       base.OnPointerUp(eventData);
 
-      if (m_EnableLongClick) TryAbortLongPress();
+      if (_EnableLongClick)
+        TryAbortLongPress();
     }
     public override void OnPointerExit(PointerEventData eventData) {
       base.OnPointerExit(eventData);
 
-      if (m_EnableLongClick) TryAbortLongPress();
+      if (_EnableLongClick)
+        TryAbortLongPress();
     }
 
     private IEnumerator PressDownEnumerator() {
-      m_State = PressState.Press;
-      m_pressedTime = 0;
-      while (m_pressedTime < m_LongPressDuration) {
+      _State = PressState.Press;
+      _PressedTime = 0;
+      while (_PressedTime < _LongPressDuration) {
         if (IndicatorEnabled) {
-          var color = m_ProgressIndicator.color;
-          var lerp = Mathf.Clamp01((m_pressedTime - m_LongClickThreshold) / (m_LongPressDuration - m_LongClickThreshold));
+          var color = _ProgressIndicator.color;
+          var lerp = Mathf.Clamp01((_PressedTime - _LongClickThreshold) / (_LongPressDuration - _LongClickThreshold));
           color.a = lerp;
-          m_ProgressIndicator.color = color;
-          m_ProgressIndicator.fillAmount = m_pressedTime / m_LongPressDuration;
+          _ProgressIndicator.color = color;
+          _ProgressIndicator.fillAmount = _PressedTime / _LongPressDuration;
         }
-        if (m_State is PressState.Press && m_pressedTime >= m_LongClickThreshold)
-          m_State = PressState.LongPress;
+        if (_State is PressState.Press && _PressedTime >= _LongClickThreshold)
+          _State = PressState.LongPress;
         yield return null;
-        m_pressedTime += Time.deltaTime;
+        _PressedTime += Time.deltaTime;
       }
-      m_OnLongPress?.Invoke();
+      _OnLongPress?.Invoke();
       ResetIndicator();
-      m_State = PressState.LongEnoughPress;
+      _State = PressState.LongEnoughPress;
     }
     private void TryAbortLongPress() {
-      if (m_pointerDownCoroutine is not null) {
-        StopCoroutine(m_pointerDownCoroutine);
-        m_pointerDownCoroutine = null;
+      if (_PointerDownCoroutine is not null) {
+        StopCoroutine(_PointerDownCoroutine);
+        _PointerDownCoroutine = null;
       }
-      if (IndicatorEnabled) ResetIndicator();
+      if (IndicatorEnabled)
+        ResetIndicator();
     }
     private void ResetIndicator() {
-      m_ProgressIndicator.fillAmount = 0f;
-      m_ProgressIndicator.gameObject.SetActive(false);
+      _ProgressIndicator.fillAmount = 0f;
+      _ProgressIndicator.gameObject.SetActive(false);
     }
 
 #if UNITY_EDITOR
@@ -131,9 +138,9 @@ namespace TRIdle.Game.UI
         EditorGUILayout.Space();
 
         // Main Switch
-        var enableProperty = serializedObject.FindProperty(nameof(m_EnableLongClick));
+        var enableProperty = serializedObject.FindProperty(nameof(_EnableLongClick));
         EditorGUILayout.PropertyField(enableProperty);
-        var threshold = serializedObject.FindProperty(nameof(m_LongClickThreshold));
+        var threshold = serializedObject.FindProperty(nameof(_LongClickThreshold));
         EditorGUILayout.Space();
 
         var foldout1 = serializedObject.FindProperty(nameof(m_Foldout1));
@@ -142,7 +149,7 @@ namespace TRIdle.Game.UI
         if (enableProperty.boolValue) {
           EditorGUI.indentLevel++;
 
-          var duration = serializedObject.FindProperty(nameof(m_LongPressDuration));
+          var duration = serializedObject.FindProperty(nameof(_LongPressDuration));
           threshold.floatValue = EditorGUILayout.Slider(threshold.displayName, threshold.floatValue, .01f, duration.floatValue);
           duration.floatValue = EditorGUILayout.Slider(duration.displayName, duration.floatValue, threshold.floatValue, 5);
 
@@ -151,11 +158,11 @@ namespace TRIdle.Game.UI
           if (foldout1.boolValue = EditorGUILayout.Foldout(foldout1.boolValue, "Long Click Properties", true, BoldFoldoutStyle)) {
             EditorGUI.indentLevel++;
 
-            EditorGUILayout.PropertyField(serializedObject.FindProperty(nameof(m_State)));
-            var showProgressProperty = serializedObject.FindProperty(nameof(m_ShowProgress));
+            EditorGUILayout.PropertyField(serializedObject.FindProperty(nameof(_State)));
+            var showProgressProperty = serializedObject.FindProperty(nameof(_ShowProgress));
             EditorGUILayout.PropertyField(showProgressProperty);
             if (showProgressProperty.boolValue) {
-              var progressIndicatorProperty = serializedObject.FindProperty(nameof(m_ProgressIndicator));
+              var progressIndicatorProperty = serializedObject.FindProperty(nameof(_ProgressIndicator));
               EditorGUILayout.PropertyField(progressIndicatorProperty);
               if (progressIndicatorProperty.objectReferenceValue == null)
                 EditorGUILayout.HelpBox("Need to set a progress indicator to show the progress", MessageType.Warning);
@@ -172,13 +179,13 @@ namespace TRIdle.Game.UI
             EditorGUI.indentLevel++;
 
             EditorGUILayout.LabelField(new GUIContent() { text = "Long Click Event", tooltip = "Invoked when the button is pressed for a long time and released." }, EditorStyles.boldLabel);
-            EditorGUILayout.PropertyField(serializedObject.FindProperty(nameof(m_OnLongClick)));
+            EditorGUILayout.PropertyField(serializedObject.FindProperty(nameof(_OnLongClick)));
             EditorGUILayout.LabelField(new GUIContent() { text = "Long Press Event", tooltip = "Invoked when the button is pressed long enough." }, EditorStyles.boldLabel);
-            EditorGUILayout.PropertyField(serializedObject.FindProperty(nameof(m_OnLongPress)));
+            EditorGUILayout.PropertyField(serializedObject.FindProperty(nameof(_OnLongPress)));
             EditorGUILayout.LabelField(new GUIContent() { text = "Short Click Event", tooltip = "Invoked when the button is pressed and released shortly." }, EditorStyles.boldLabel);
-            EditorGUILayout.PropertyField(serializedObject.FindProperty(nameof(m_OnShortClick)));
+            EditorGUILayout.PropertyField(serializedObject.FindProperty(nameof(_OnShortClick)));
             EditorGUILayout.LabelField(new GUIContent() { text = "Press Event", tooltip = "Invoked instantly when the button is pressed." }, EditorStyles.boldLabel);
-            EditorGUILayout.PropertyField(serializedObject.FindProperty(nameof(m_OnAnyPress)));
+            EditorGUILayout.PropertyField(serializedObject.FindProperty(nameof(_OnAnyPress)));
 
             EditorGUI.indentLevel--;
           }

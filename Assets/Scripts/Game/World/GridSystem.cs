@@ -21,15 +21,15 @@ namespace TRIdle.Game.World
   public class GridSystem : MonoSingleton<GridSystem>
   {
     public enum State { NotInitialized, Initializing, Ready, Calculating }
-    [SerializeField, ReadonlyField] private State m_State = State.NotInitialized;
-    private readonly Dictionary<Vector2Int, CellData> m_Grid = new();
+    [SerializeField, ReadonlyField] private State _State = State.NotInitialized;
+    private readonly Dictionary<Vector2Int, CellData> _Grid = new();
 
     public void Setup() {
-      if (m_State is not State.NotInitialized) {
+      if (_State is not State.NotInitialized) {
         this.Log("System has set before. Skipping setup process");
         return;
       }
-      m_State = State.Initializing;
+      _State = State.Initializing;
 
       StartCoroutine(SetupAllFloorCells());
     }
@@ -39,7 +39,7 @@ namespace TRIdle.Game.World
       this.Log("Generating grid");
 
       // Variables used
-      LayerMask floorLayer = LayerMask.NameToLayer("Floor"), obstacleLayer = LayerMask.NameToLayer("Obstacle");
+      int floorLayer = LayerMask.NameToLayer("Floor"), floorMask = LayerMask.GetMask("Floor"), obstacleMask = LayerMask.GetMask("Obstacle");
       Vector3 half = (CellSize / 2).ToVector3(), flatHalf = half.SetY(0);
 
       Bounds bounds = GetAllRenderersBounds(floorLayer);
@@ -47,32 +47,33 @@ namespace TRIdle.Game.World
       float top = bounds.max.y + CellSize, bottom = bounds.min.y;
       this.Log($"Floor bounds set\n[{bounds}] -> [{gridBounds}]\nHeight: {bottom}~{top}");
 
-      GenerateCellData();
-      this.Log($"{m_Grid.Count} cells generated");
+      yield return GenerateCellData();
+      this.Log($"{_Grid.Count} cells generated");
 
       // Debug Draw
       TDebug.DrawCube(bounds.center, bounds.extents, Color.cyan, 300);
-      foreach (var cell in m_Grid.Values)
+      foreach (var cell in _Grid.Values)
         if (float.IsNaN(cell.height) is false)
           TDebug.DrawCube(cell.center.AddY(CellSize / 2), half, cell.hasObstacle ? Color.red : Color.green, 300);
 
-      m_State = State.Ready;
+      _State = State.Ready;
       yield break;
 
       // Local functions
-      void GenerateCellData() {
-        m_Grid.Clear();
+      IEnumerator GenerateCellData() {
+        _Grid.Clear();
         foreach (var cell in gridBounds.allPositionsWithin) {
           var ground = cell.X0Y() * CellSize + flatHalf; // cell center with y = 0
-          var height = CellCast(ground.AddY(top), flatHalf, top - bottom, out var hit, floorLayer.ToMask()) ? hit.point.y : float.NaN;
-          bool hasObstacle = CellCast(ground.AddY(height + CellSize / 2), half, 0, out _, obstacleLayer.ToMask());
+          var height = CellCast(ground.AddY(top), flatHalf, top - bottom, out var hit, floorMask) ? hit.point.y : float.NaN;
+          bool hasObstacle = CellCast(ground.AddY(height + CellSize), flatHalf, CellSize, out _, obstacleMask);
           CellData data = new() {
             index = cell,
             center = ground.AddY(height),
             height = height,
             hasObstacle = hasObstacle
           };
-          m_Grid.Add(cell, data);
+          _Grid.Add(cell, data);
+          if (Time.TickElapsed(this)) yield return null;
         }
       }
       static Bounds GetAllRenderersBounds(LayerMask layer) {

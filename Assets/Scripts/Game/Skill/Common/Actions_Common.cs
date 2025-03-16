@@ -1,4 +1,4 @@
 namespace TRIdle.Game.Skill
 {
-  
+
 }

@@ -43,7 +43,7 @@ namespace TRIdle.Game.UI
 
       public void Update() {
         foreach (var action in m_ActionElements.Keys.Except(m_skill.Actions))
-          RemoveElement(action);        
+          RemoveElement(action);
         foreach (var action in m_skill.Actions.Intersect(m_ActionElements.Keys))
           m_ActionElements[action].Refresh();
         foreach (var action in m_skill.Actions.Except(m_ActionElements.Keys))
@@ -63,7 +63,8 @@ namespace TRIdle.Game.UI
       }
 
       public void Focus(ActionBase action) {
-        if (m_FocusedAction == action) return;
+        if (m_FocusedAction == action)
+          return;
         this.Log($"Now focusing {action.Name}.");
         m_FocusedAction = action;
         ActionPopupDescription.text = action.DescriptionInfo;
