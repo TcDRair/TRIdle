@@ -5,7 +5,10 @@ namespace TRIdle.Logics.Extensions
   // Almost all of this can be done without this extension in C# 10.0+
   public static class VectorExtensions
   {
+    public static Vector2 ToVector2(this float f) => new(f, f);
     public static Vector3 ToVector3(this float f) => new(f, f, f);
+    public static Vector2Int ToVector2Int(this Vector2 v) => new((int)v.x, (int)v.y);
+
 
     public static Vector3 SetX(this Vector3 vector, float x) => new(x, vector.y, vector.z);
     public static Vector3 SetY(this Vector3 vector, float y) => new(vector.x, y, vector.z);

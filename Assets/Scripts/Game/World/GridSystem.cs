@@ -10,12 +10,12 @@ namespace TRIdle.Game.World
   using Logics.Attributes;
   using Logics.Extensions;
 
-  public struct CellData
+  public record CellData
   {
     public Vector2Int index;
     public Vector3 center;
     public float height;
-    public bool hasObstacle;
+    public bool hasObstacle, hasProp;
   }
 
   public class GridSystem : MonoSingleton<GridSystem>
@@ -23,6 +23,15 @@ namespace TRIdle.Game.World
     public enum State { NotInitialized, Initializing, Ready, Calculating }
     [SerializeField, ReadonlyField] private State _State = State.NotInitialized;
     private readonly Dictionary<Vector2Int, CellData> _Grid = new();
+    private readonly List<Prop> _Props = new();
+
+    #region Features
+    public Vector2Int ToGridIndex(Vector3 vector) => new(Mathf.FloorToInt(vector.x / CellSize), Mathf.FloorToInt(vector.z / CellSize));
+
+    #endregion
+
+
+    #region Initialization
 
     public void Setup() {
       if (_State is not State.NotInitialized) {
@@ -31,11 +40,11 @@ namespace TRIdle.Game.World
       }
       _State = State.Initializing;
 
-      StartCoroutine(SetupAllFloorCells());
+      StartCoroutine(ScanAndGenerateWorld());
     }
 
-    const float CellSize = 4, Margin = 0.01f;
-    IEnumerator SetupAllFloorCells() {
+    const float CellSize = 4; //, Margin = 0.01f;
+    IEnumerator ScanAndGenerateWorld() {
       this.Log("Generating grid");
 
       // Variables used
@@ -45,16 +54,15 @@ namespace TRIdle.Game.World
       Bounds bounds = GetAllRenderersBounds(floorLayer);
       RectInt gridBounds = GetGridBounds(bounds);
       float top = bounds.max.y + CellSize, bottom = bounds.min.y;
-      this.Log($"Floor bounds set\n[{bounds}] -> [{gridBounds}]\nHeight: {bottom}~{top}");
+      // this.Log($"Floor bounds set\n[{bounds}] -> [{gridBounds}]\nHeight: {bottom}~{top}");
 
       yield return GenerateCellData();
       this.Log($"{_Grid.Count} cells generated");
 
-      // Debug Draw
-      TDebug.DrawCube(bounds.center, bounds.extents, Color.cyan, 300);
-      foreach (var cell in _Grid.Values)
-        if (float.IsNaN(cell.height) is false)
-          TDebug.DrawCube(cell.center.AddY(CellSize / 2), half, cell.hasObstacle ? Color.red : Color.green, 300);
+      yield return ScanAllProps();
+      this.Log($"{_Props.Count} props scanned");
+
+      DebugDrawGrid();
 
       _State = State.Ready;
       yield break;
@@ -62,10 +70,14 @@ namespace TRIdle.Game.World
       // Local functions
       IEnumerator GenerateCellData() {
         _Grid.Clear();
+        Collider[] col = new Collider[100];
+
         foreach (var cell in gridBounds.allPositionsWithin) {
-          var ground = cell.X0Y() * CellSize + flatHalf; // cell center with y = 0
-          var height = CellCast(ground.AddY(top), flatHalf, top - bottom, out var hit, floorMask) ? hit.point.y : float.NaN;
-          bool hasObstacle = CellCast(ground.AddY(height + CellSize), flatHalf, CellSize, out _, obstacleMask);
+          Vector3 ground = cell.X0Y() * CellSize + flatHalf; // cell center with y = 0
+          float height =
+            Physics.BoxCast(ground.SetY(top), flatHalf, Vector3.down, out var hit, Quaternion.identity, top - bottom, floorMask)
+            ? hit.point.y : float.NaN;
+          bool hasObstacle = Physics.OverlapBoxNonAlloc(ground.SetY(height), flatHalf, col, Quaternion.identity, obstacleMask) > 0;
           CellData data = new() {
             index = cell,
             center = ground.AddY(height),
@@ -76,6 +88,42 @@ namespace TRIdle.Game.World
           if (Time.TickElapsed(this)) yield return null;
         }
       }
+      IEnumerator ScanAllProps() {
+        _Props.Clear();
+        _Props.AddRange(FindObjectsByType<Prop>(FindObjectsSortMode.None));
+
+        foreach (var prop in _Props) {
+          // Check its position info (pivot index / cardinal direction)
+          prop.position.index = ToGridIndex(prop.transform.position);
+          Vector3 rot = prop.transform.rotation.eulerAngles;
+          var angle = rot.y.PositiveRemainder(360) - 45; // -45 ~ 315
+          (prop.position.cardinal, angle) = angle switch {
+            < 45 => (Cardinal.North, 0),
+            < 135 => (Cardinal.East, 90),
+            < 225 => (Cardinal.South, 180),
+            _ => (Cardinal.West, 270)
+          };
+          rot.y = angle;
+          prop.transform.eulerAngles = rot;
+          // Apply their occupation to grid. Maybe CellData should have a reference to prop.
+          //TODO : for now, only prop's center index is applied.
+          _Grid[prop.position.index].hasProp = true;
+        }
+
+        yield break;
+      }
+
+      void DebugDrawGrid() {
+        TDebug.DrawCube(bounds.center, bounds.extents, Color.cyan, 300);
+        Vector3 margin = 0.01f.ToVector3();
+        foreach (var cell in _Grid.Values)
+          if (float.IsNaN(cell.height) is false)
+            TDebug.DrawCube(cell.center.AddY(CellSize / 2), half - margin, cell.hasObstacle ? Color.red : cell.hasProp ? Color.yellow : Color.clear, 300);
+        foreach (var prop in _Props)
+          if (prop.TryGetComponent<Renderer>(out var renderer))
+            TDebug.DrawCube(renderer.bounds.center, renderer.bounds.extents, Color.blue, 300);
+      }
+
       static Bounds GetAllRenderersBounds(LayerMask layer) {
         Bounds bounds = new();
         var renderers = FindObjectsByType<Renderer>(FindObjectsSortMode.None);
@@ -91,12 +139,7 @@ namespace TRIdle.Game.World
           maxZ = Mathf.FloorToInt(bounds.max.z / CellSize);
         return new RectInt(minX, minZ, maxX - minX, maxZ - minZ); // Exclude last edges
       }
-      static bool CellCast(Vector3 center, Vector3 half, float maxDistance, out RaycastHit hit, int layerMask) {
-        // Shrink the box a bit to avoid hitting the grid's edges, except for the bottom face
-        Vector3 centerS = center.AddY(-Margin / 2); // center is slightly below from the original
-        Vector3 halfS = new(Mathf.Max(0, half.x - Margin), Mathf.Max(0, half.y - Margin), Mathf.Max(0, half.z - Margin));
-        return Physics.BoxCast(centerS, halfS, Vector3.down, out hit, Quaternion.identity, maxDistance, layerMask);
-      }
     }
+    #endregion
   }
 }
