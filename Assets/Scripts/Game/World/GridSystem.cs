@@ -43,13 +43,23 @@ namespace TRIdle.Game.World
       StartCoroutine(ScanAndGenerateWorld());
     }
 
-    const float CellSize = 4; //, Margin = 0.01f;
+    #region Private Fixed Variables
+    const float CellSize = 4, HalfSize = CellSize / 2, Margin = 0.01f;
+    readonly static Vector3
+      s_InnerPadding = Margin.ToVector3(),
+      s_InnerFlatPadding = s_InnerPadding.SetY(0),
+      s_Extents = HalfSize.ToVector3(),
+      s_FlatExtents = s_Extents.SetY(0),
+      s_PaddedExtents = s_Extents - s_InnerPadding,
+      s_PaddedFlatExtents = s_PaddedExtents.SetY(0);
+    #endregion
+
     IEnumerator ScanAndGenerateWorld() {
       this.Log("Generating grid");
 
       // Variables used
       int floorLayer = LayerMask.NameToLayer("Floor"), floorMask = LayerMask.GetMask("Floor"), obstacleMask = LayerMask.GetMask("Obstacle");
-      Vector3 half = (CellSize / 2).ToVector3(), flatHalf = half.SetY(0);
+
 
       Bounds bounds = GetAllRenderersBounds(floorLayer);
       RectInt gridBounds = GetGridBounds(bounds);
@@ -73,11 +83,12 @@ namespace TRIdle.Game.World
         Collider[] col = new Collider[100];
 
         foreach (var cell in gridBounds.allPositionsWithin) {
-          Vector3 ground = cell.X0Y() * CellSize + flatHalf; // cell center with y = 0
+          Vector3 ground = cell.X0Y() * CellSize + s_FlatExtents; // cell center with y = 0
+          // Height : 
           float height =
-            Physics.BoxCast(ground.SetY(top), flatHalf, Vector3.down, out var hit, Quaternion.identity, top - bottom, floorMask)
+            Physics.BoxCast(ground.SetY(top), s_PaddedFlatExtents, Vector3.down, out var hit, Quaternion.identity, top - bottom, floorMask)
             ? hit.point.y : float.NaN;
-          bool hasObstacle = Physics.OverlapBoxNonAlloc(ground.SetY(height), flatHalf, col, Quaternion.identity, obstacleMask) > 0;
+          bool hasObstacle = Physics.OverlapBoxNonAlloc(ground.SetY(height + HalfSize), s_PaddedExtents, col, Quaternion.identity, obstacleMask) > 0;
           CellData data = new() {
             index = cell,
             center = ground.AddY(height),
@@ -94,10 +105,10 @@ namespace TRIdle.Game.World
 
         foreach (var prop in _Props) {
           // Check its position info (pivot index / cardinal direction)
-          prop.position.index = ToGridIndex(prop.transform.position);
+          prop.gridTransform.index = ToGridIndex(prop.transform.position);
           Vector3 rot = prop.transform.rotation.eulerAngles;
           var angle = rot.y.PositiveRemainder(360) - 45; // -45 ~ 315
-          (prop.position.cardinal, angle) = angle switch {
+          (prop.gridTransform.cardinal, angle) = angle switch {
             < 45 => (Cardinal.North, 0),
             < 135 => (Cardinal.East, 90),
             < 225 => (Cardinal.South, 180),
@@ -107,7 +118,7 @@ namespace TRIdle.Game.World
           prop.transform.eulerAngles = rot;
           // Apply their occupation to grid. Maybe CellData should have a reference to prop.
           //TODO : for now, only prop's center index is applied.
-          _Grid[prop.position.index].hasProp = true;
+          _Grid[prop.gridTransform.index].hasProp = true;
         }
 
         yield break;
@@ -118,7 +129,7 @@ namespace TRIdle.Game.World
         Vector3 margin = 0.01f.ToVector3();
         foreach (var cell in _Grid.Values)
           if (float.IsNaN(cell.height) is false)
-            TDebug.DrawCube(cell.center.AddY(CellSize / 2), half - margin, cell.hasObstacle ? Color.red : cell.hasProp ? Color.yellow : Color.clear, 300);
+            TDebug.DrawCube(cell.center.AddY(HalfSize), s_PaddedExtents, cell.hasObstacle ? Color.red : cell.hasProp ? Color.yellow : Color.clear, 300);
         foreach (var prop in _Props)
           if (prop.TryGetComponent<Renderer>(out var renderer))
             TDebug.DrawCube(renderer.bounds.center, renderer.bounds.extents, Color.blue, 300);

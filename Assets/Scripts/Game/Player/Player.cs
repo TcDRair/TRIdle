@@ -8,9 +8,8 @@ using System.Collections.Generic;
 
 using UnityEngine;
 
-namespace TRIdle.Game
+namespace TRIdle.Game.Controller
 {
-  using UI;
   using Skill;
   using PlayerInternal;
 
@@ -20,8 +19,8 @@ namespace TRIdle.Game
 
   public class Player : LoaderBase
   {
-    static Player m_instance;
-    public static Player Instance => m_instance ??= new();
+    static Player s_Instance;
+    public static Player Instance => s_Instance ??= new();
 
     public PlayerData Data { get; private set; } = new();
 
@@ -41,7 +40,6 @@ namespace TRIdle.Game
       }
       yield break;
     }
-
     public override IEnumerator Save() {
       this.Log($"Saving player data...");
       JsonObject node = new(), skillNode = new();
@@ -59,20 +57,25 @@ namespace TRIdle.Game
     }
 
     #region Skill Actions
-    PlayerMono m_mono;
+    PlayerMono _Mono;
     PlayerMono Mono {
       get {
-        if (m_mono == null) {
-          m_mono = new GameObject("PlayerMono").AddComponent<PlayerMono>();
-          UnityEngine.Object.DontDestroyOnLoad(m_mono.gameObject);
+        if (_Mono == null) {
+          _Mono = PlayerMono.GetInstance();
+          // _Mono.Setup(); <- 모델 프리팹 필요 : ID값 저장 후 Resources.Load로 불러올 것
+          // Find any Player gameobject in scene, else make one
+          // TODO : 직렬화되는 데이터에 아래 목록을 저장한 뒤, 메인 씬 로드 시 해당 내역으로 초기화
+          // 1. 커마 - 플레이어 이름, "캐릭터 모델" <- 일단 프리팹:id로 저장
+          // 2. 월드 - 트랜스폼 등
+          // 위 요소를 Mono에 이식해서 한 장 마무리
         }
-        return m_mono;
+        return _Mono;
       }
     }
 
     // Start Action Delay, but if the same action is focused, stop the delay instead.
     public void ActivateAction(ActionBase action) {
-      Mono.StartActionDelay(Data.CurrentAction = (Data.CurrentAction == action) ? null : action);
+      Mono.StartActionDelay(Data.currentAction = (Data.currentAction == action) ? null : action);
     }
 
     #endregion
@@ -80,10 +83,10 @@ namespace TRIdle.Game
 
   public record PlayerData
   {
-    public SkillBase CurrentSkill;
-    public ActionBase CurrentAction;
+    public SkillBase currentSkill;
+    public ActionBase currentAction;
 
-    public RFloat ActionSpeed = new(1);
+    public RFloat actionSpeed = new(1);
 
     public JsonObject ToJson() => new() {
       ["Placeholder"] = "Placeholder"

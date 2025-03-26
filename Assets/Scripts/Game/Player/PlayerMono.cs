@@ -1,57 +1,102 @@
-using System;
 using System.Collections;
 
 using UnityEngine;
+using UnityEngine.AI;
 
-namespace TRIdle.Game.PlayerInternal
+namespace TRIdle.Game.Controller.PlayerInternal
 {
   using UI;
   using Skill;
+  using Logics;
+  using Logics.Attributes;
   using Logics.Extensions;
 
   /// <summary>
-  /// PlayerMono is a MonoBehaviour that provides delay and cooldown functionalities.
-  /// Controls time-based actions with coroutines.
+  /// This class is attatched to the player character gameobject.
+  /// Controls automatic movements/motions of the character in a real world.
+  /// Also provides coroutines' ownership for the actions of the player.
   /// </summary>
   public class PlayerMono : MonoBehaviour
   {
-    private PlayerData Data => Player.Instance.Data;
+    private static PlayerMono s_Instance;
+    public static PlayerMono GetInstance() {
+      if (s_Instance == null)
+        return new GameObject("PlayerMono").AddComponent<PlayerMono>();
+      return s_Instance;
+    }
 
-    public float DelayDuration, DelayElapsed;
+    [SerializeField, ReadonlyField] protected Transform _Model;
+    [SerializeField, ReadonlyField] protected Animator _Animator;
+    [SerializeField, ReadonlyField] protected NavMeshAgent _NavMeshAgent;
 
-    private ActionBase m_delayingAction;
-    private Coroutine m_delayCoroutine;
+
+    private Renderer _Renderer;
+
+    #region Unity Callbacks
+    private void Awake() {
+      if (s_Instance != null) {
+        Debug.LogError("PlayerMono is already instantiated.");
+        Destroy(this);
+        return;
+      }
+      s_Instance = this;
+    }
+
+    private void OnDrawGizmos() {
+      if (FindRenderer()) // Also works in editor mode
+        TDebug.DrawCube(_Renderer.bounds.center, _Renderer.bounds.extents, Color.cyan);
+    }
+    #endregion
+
+    public void Setup(GameObject model/*TODO : Get serialized data from Player*/) {
+      _Model = Instantiate(model, transform).transform;
+      _Animator = _Model.GetComponentInChildren<Animator>();
+      _NavMeshAgent = GetComponentInChildren<NavMeshAgent>();
+      FindRenderer();
+    }
+
+    private bool FindRenderer() => _Renderer != null || transform.TryGetComponentInChildren(out _Renderer);
+
+    #region Action Coroutine
+    // TODO : Important changes
+    // Now PlayrMono has a 3D world gameobject.
+    // Edit below action features into a real world prototypes.
+
+    public float delayDuration, delayElapsed;
+    private ActionBase _DelayingAction;
+    private Coroutine _DelayCoroutine;
 
     public void StartActionDelay(ActionBase action) {
       // same action : ignore
-      if (action == m_delayingAction) return;
+      if (action == _DelayingAction) return;
       // other action : stop current action (delay)
-      if (m_delayCoroutine is not null) {
-        StopCoroutine(m_delayCoroutine);
-        if (m_delayingAction is not null) m_delayingAction.Progress = 0;
+      if (_DelayCoroutine is not null) {
+        StopCoroutine(_DelayCoroutine);
+        if (_DelayingAction is not null) _DelayingAction.Progress = 0;
       }
       // null action : update and ignore
-      if ((m_delayingAction = action) is null) return;
+      if ((_DelayingAction = action) is null) return;
       // start delay
       this.Log("Start Delay!");
-      m_delayCoroutine = StartCoroutine(DelayLoop());
+      _DelayCoroutine = StartCoroutine(DelayLoop());
     }
 
     IEnumerator DelayLoop() {
-      while (m_delayingAction is not null) {
-        DelayElapsed = 0;
-        DelayDuration = m_delayingAction.Data.Duration.Value;
+      while (_DelayingAction is not null) {
+        delayElapsed = 0;
+        delayDuration = _DelayingAction.Data.Duration.Value;
 
-        while (DelayElapsed < DelayDuration) {
-          DelayElapsed += Time.deltaTime;
-          m_delayingAction.Progress = DelayElapsed / DelayDuration;
+        while (delayElapsed < delayDuration) {
+          delayElapsed += Time.DeltaTime;
+          _DelayingAction.Progress = delayElapsed / delayDuration;
           yield return null;
         }
 
-        m_delayingAction.Activate();
-        m_delayingAction.Progress = DelayElapsed = 0;
+        _DelayingAction.Activate();
+        _DelayingAction.Progress = delayElapsed = 0;
         UI_MainSceneController.Instance.Menu_Update();
       }
     }
+    #endregion
   }
 }

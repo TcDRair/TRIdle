@@ -6,7 +6,8 @@ using TMPro;
 namespace TRIdle.Game.UI
 {
   using Skill;
-  using TRIdle.Logics.Extensions;
+  using Controller;
+  using Logics.Extensions;
 
   /// <summary>Default UI element for action. Derive this class to create custom Action UI.</summary>
   public class UI_ActionElement : MonoBehaviour

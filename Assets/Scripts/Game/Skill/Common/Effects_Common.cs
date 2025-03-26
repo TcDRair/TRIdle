@@ -1,8 +1,10 @@
+using System.Collections.Generic;
+
 using UnityEngine;
 
 namespace TRIdle.Game.Skill
 {
-  using System.Collections.Generic;
+  using Controller;
   using Logics.Math;
 
   public sealed class Effect_Common_Internalization : EffectBase<Effect_Common_Internalization>
@@ -13,7 +15,7 @@ namespace TRIdle.Game.Skill
 
     private readonly Dictionary<ActionBase, int> m_cumulated = new();
 
-    private ActionBase Current => Player.Instance.Data.CurrentAction;
+    private ActionBase Current => Player.Instance.Data.currentAction;
     public override void OnUpdate() {
       // Add current action if not in the dictionary
       if (m_cumulated.TryGetValue(Current, out _) is false) {
@@ -39,7 +41,7 @@ namespace TRIdle.Game.Skill
           value.multiplier += Mathf.Clamp(count - Yield, 0f, Duration) / Duration * SpeedMultiplier;
           return value;
         }
-        : value => value; // Somehow if the action is not in the dictionary, it should not be modified
+    : value => value; // Somehow if the action is not in the dictionary, it should not be modified
 
     public override void OnActivate() { }
     public override void OnDeactivate() { }

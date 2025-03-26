@@ -5,7 +5,7 @@ using UnityEditor;
 
 namespace TRIdle.Logics
 {
-  using Game;
+  using Game.Controller;
   using Extensions;
   using Serialization;
 

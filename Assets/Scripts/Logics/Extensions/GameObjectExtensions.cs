@@ -21,6 +21,17 @@ namespace TRIdle.Logics.Extensions
       return false;
     }
 
+    public static bool TryGetComponentInChildren<T>(this GameObject gameObject, out T component) where T : Component
+      => gameObject.transform.TryGetComponentInChildren(out component);
+    public static bool TryGetComponentInChildren<T>(this Transform transform, out T component) where T : Component {
+      if (transform == null) { component = null; return false; }
+      if (transform.TryGetComponent(out component)) return true;
+      if ((component = transform.GetComponentInChildren<T>()) == null) return false;
+      return true;
+    }
+
+
+
     /// <summary>
     /// Get the bounding box of a game object and its children.<br/>
     /// This method uses <see cref="Renderer.bounds"/> to calculate the bounding box.

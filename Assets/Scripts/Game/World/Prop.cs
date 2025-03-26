@@ -8,7 +8,7 @@ namespace TRIdle.Game.World
 
   public enum Cardinal { North, South, East, West }
   [Serializable]
-  public struct PositionInfo
+  public struct GridTransform
   {
     [ReadonlyField] public Vector2Int index;
     [ReadonlyField] public Cardinal cardinal;
@@ -16,12 +16,7 @@ namespace TRIdle.Game.World
 
   public class Prop : MonoBehaviour
   {
-    // What does prop do?
-    // - Is it a building? (e.g. house, shop) : Yes. All props are buildings.
-    // - Is it an obstacle? (e.g. wall, tree) : Depends on the prop types. i.e. a simple sign is not an obstacle
-    // - Can it be interacted with? : Almost Yes. Without some exceptions succh as skill level limit, all props can be interacted.
-
-
-    public PositionInfo position;
+    public GridTransform gridTransform;
+    public virtual bool IsInteractable() => true;
   }
 }
